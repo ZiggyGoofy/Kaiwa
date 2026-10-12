@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kaiwa – Parler japonais</title>
+  <meta name="theme-color" content="#1e2a44">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo">会話</span><span class="name">Kaiwa</span></div>
+    <div class="toolbar">
+      <span class="pill" id="ptsPill" title="Tes points">⭐ 0</span>
+      <button class="toggle" id="tgFuri" title="Afficher les furigana" aria-pressed="true">ふり</button>
+      <button class="toggle" id="tgRomaji" title="Afficher le rōmaji" aria-pressed="false">rō</button>
+      <button class="icon" id="btnSettings" title="Réglages">⚙</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-view="kana"><span class="ti">あ</span><span class="tl">Kana</span></button>
+    <button data-view="phrases"><span class="ti">💬</span><span class="tl">Phrases</span></button>
+    <button data-view="chat" class="main-tab"><span class="ti">🌸</span><span class="tl">Sakura</span></button>
+    <button data-view="cards"><span class="ti">🃏</span><span class="tl">Cartes</span></button>
+    <button data-view="quiz"><span class="ti">🏆</span><span class="tl">Quiz</span></button>
+  </nav>
+
+  <div class="views">
+    <!-- Conversation -->
+    <section class="view" id="view-chat">
+      <div class="scenario-bar">
+        <label for="scenario">Thème :</label>
+        <select id="scenario"></select>
+        <button class="btn small" id="btnNew" title="Nouvelle conversation">＋ Nouvelle</button>
+      </div>
+      <button class="fab-wotd" id="btnWotd" title="Mot du jour">
+        <span class="fab-ic" lang="ja">日</span><span class="fab-tl">Mot du jour</span><span class="dot" id="wotdDot"></span>
+      </button>
+      <main id="chat" class="chat" aria-live="polite"></main>
+      <div id="suggestions" class="suggestions"></div>
+      <form id="composer" class="composer">
+        <button type="button" id="btnMic" class="mic" title="Parler (japonais)">🎤</button>
+        <textarea id="input" rows="1" placeholder="Écris en japonais (ou en français si tu bloques)…" lang="ja"></textarea>
+        <button type="submit" id="btnSend" class="send" title="Envoyer">➤</button>
+      </form>
+    </section>
+
+    <!-- Kana -->
+    <section class="view scroll" id="view-kana" hidden></section>
+    <!-- Phrases -->
+    <section class="view scroll" id="view-phrases" hidden></section>
+    <!-- Flashcards -->
+    <section class="view scroll" id="view-cards" hidden></section>
+    <!-- Quiz -->
+    <section class="view scroll" id="view-quiz" hidden></section>
+  </div>
+
+  <dialog id="wotdDialog" class="wotd-dialog">
+    <button class="close-x" id="wotdClose" title="Fermer">✕</button>
+    <div id="view-jour" class="wotd-body"></div>
+  </dialog>
+
+  <dialog id="settings">
+    <form method="dialog" class="settings">
+      <h2>Réglages</h2>
+      <label>Intelligence artificielle
+        <select id="provider"></select>
+      </label>
+      <label><span id="keyLabel">Clé API</span>
+        <input type="password" id="apiKey" autocomplete="off">
+        <small id="keyHelp"></small>
+        <small>La clé reste uniquement sur cet appareil.</small>
+      </label>
+      <label id="modelRow">Modèle
+        <select id="model"></select>
+      </label>
+      <label>Autre modèle (facultatif)
+        <input type="text" id="customModel" placeholder="identifiant exact du modèle" autocomplete="off">
+      </label>
+      <label class="row"><input type="checkbox" id="autoSpeak"> Lire automatiquement les réponses</label>
+      <label class="row"><input type="checkbox" id="autoSend"> Envoyer automatiquement après la dictée</label>
+      <label>Vitesse de la voix : <span id="rateVal"></span>
+        <input type="range" id="rate" min="0.5" max="1.2" step="0.05">
+      </label>
+      <div class="actions">
+        <button value="close" class="btn">Fermer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+  <script src="learn.js"></script>
+</body>
+</html>
