@@ -9,10 +9,13 @@ Application web pour pratiquer le japonais (niveau débutant N5-N4) : conversati
 - **Kana** — tableaux hiragana / katakana (base, dakuten, combinaisons), touche pour écouter
 - **Phrases** — 8 thèmes de phrases utiles avec audio, et bouton « Pratiquer avec Sakura »
 - **Cartes** — flashcards qui se retournent (kana, 7 catégories de vocabulaire, phrases), sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
+- **Particules** (dans Cartes) — 38 phrases à trous pour choisir la bonne particule (は・が・を, に・で・へ…, と・も・の・か…, ou tout mélangé), avec explication en français, audio, rōmaji et mémo des particules. +5 ⭐ par bonne réponse ; une erreur revient 3 phrases plus loin. Sur PC : touches 1-4 pour répondre, Entrée pour continuer
 - **Quiz** — 10 questions (hiragana, katakana ou vocabulaire). Points : 10 ⭐ par bonne réponse + bonus de série (jusqu'à +10), +50 ⭐ sans faute. Record par quiz, niveau tous les 200 ⭐
 - **Points ⭐** — affichés en haut de l'écran ; on en gagne aussi avec le mot du jour (+20 ⭐)
 
 Sur téléphone, l'interface passe en mode « menu de jeu » : barre d'onglets en bas, gros boutons en relief.
+
+**Langues** : au premier lancement, l'app demande de choisir entre **français** et **anglais** (interface et tout le contenu : traductions, explications, Sakura). On peut changer ensuite dans ⚙ Réglages → Langue.
 
 Une seule base de code : elle tourne dans le navigateur sur PC et s'installe comme une app sur téléphone (PWA).
 
@@ -83,6 +86,8 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - `index.html` — la page
 - `style.css` — l'apparence (thème clair/sombre automatique)
 - `app.js` — la conversation (Groq / OpenRouter / Claude, voix, corrections…)
+- `i18n.js` — choix de la langue (français / anglais)
+- `content-en.js` — traductions anglaises du contenu (même ordre que `content.js`)
 - `content.js` — tout le contenu : kana, phrases, vocabulaire, mots du jour (facile à compléter)
 - `learn.js` — onglets, mot du jour, kana, cartes, quiz et points
 - `manifest.json`, `sw.js`, `icons/` — ce qui rend l'app installable
@@ -91,6 +96,8 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 
 - Thèmes de conversation : objet `SCENARIOS` dans `app.js`
 - Ajouter des mots du jour : `WORDS_OF_DAY` dans `content.js`, format `[mot, romaji, français, exemple, traduction]`
+- Si tu ajoutes du contenu dans `content.js`, ajoute sa traduction anglaise **au même endroit** dans `content-en.js` (sinon la console affiche « EN content mismatch » et la liste reste en français en mode anglais)
+- Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v4` → `kaiwa-v5` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v6` → `kaiwa-v7` dans `sw.js` pour forcer la mise à jour sur le téléphone.

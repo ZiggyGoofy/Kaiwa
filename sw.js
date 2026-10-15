@@ -1,7 +1,7 @@
 // Service worker : met l'app en cache pour qu'elle s'ouvre vite et soit installable.
 // Les appels à l'API Claude ne sont jamais mis en cache.
-const CACHE = "kaiwa-v4";
-const FILES = ["./", "index.html", "style.css", "app.js", "content.js", "learn.js", "manifest.json", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
+const CACHE = "kaiwa-v6";
+const FILES = ["./", "index.html", "style.css", "i18n.js", "app.js", "content.js", "content-en.js", "learn.js", "manifest.json", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));

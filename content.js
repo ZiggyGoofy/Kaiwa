@@ -298,3 +298,63 @@ const WORDS_OF_DAY = [
   ["{住|す}む", "sumu", "habiter", "パリに{住|す}んでいます。", "J'habite à Paris."],
   ["{泳|およ}ぐ", "oyogu", "nager", "{海|うみ}で{泳|およ}ぐのが{好|す}きです。", "J'aime nager dans la mer."],
 ];
+
+// ---------- Particules : phrases à trous ----------
+// [phrase avec ＿ et furigana, bonne particule, 3 mauvaises particules (séparées par |), rōmaji avec __, français, explication]
+// Les mauvaises réponses sont choisies pour être vraiment fausses dans la phrase (aucune ambiguïté).
+const PARTICLES = {
+  base: {
+    title: "は・が・を", icon: "は",
+    items: [
+      ["{私|わたし}＿{学生|がくせい}です。", "は", "を|に|で", "watashi __ gakusei desu.", "Je suis étudiant(e).", "は marque le thème de la phrase : « quant à moi, … »."],
+      ["{水|みず}＿{飲|の}みます。", "を", "が|に|へ", "mizu __ nomimasu.", "Je bois de l'eau.", "を marque le complément d'objet direct : ce que l'on boit."],
+      ["{私|わたし}は{猫|ねこ}＿{好|す}きです。", "が", "に|で|と", "watashi wa neko __ suki desu.", "J'aime les chats.", "Avec 好き (aimer), la chose aimée prend が."],
+      ["{誰|だれ}＿{来|き}ましたか。", "が", "は|を|で", "dare __ kimashita ka.", "Qui est venu ?", "Un mot interrogatif sujet (誰, 何…) prend toujours が, jamais は."],
+      ["{本|ほん}＿{読|よ}みます。", "を", "が|に|へ", "hon __ yomimasu.", "Je lis un livre.", "を marque ce que l'on lit : le complément d'objet direct."],
+      ["{私|わたし}は{日本語|にほんご}＿{分|わ}かります。", "が", "を|に|へ", "watashi wa nihongo __ wakarimasu.", "Je comprends le japonais.", "Avec 分かる (comprendre), ce que l'on comprend prend が, pas を."],
+      ["{今日|きょう}＿{暑|あつ}いですね。", "は", "を|へ|で", "kyou __ atsui desu ne.", "Il fait chaud aujourd'hui, hein.", "は présente le thème : « aujourd'hui, il fait chaud »."],
+      ["{公園|こうえん}に{犬|いぬ}＿います。", "が", "を|で|へ", "kouen ni inu __ imasu.", "Il y a un chien dans le parc.", "Avec いる / ある (il y a), ce qui existe prend が."],
+      ["テレビ＿{見|み}ます。", "を", "が|に|へ", "terebi __ mimasu.", "Je regarde la télé.", "を marque ce que l'on regarde."],
+      ["{田中|たなか}さん＿{先生|せんせい}です。", "は", "を|に|へ", "Tanaka-san __ sensei desu.", "M. Tanaka est professeur.", "Phrase « A は B です » : A est B."],
+      ["{雨|あめ}＿{降|ふ}っています。", "が", "を|で|へ", "ame __ futte imasu.", "Il pleut.", "Pour décrire ce qu'on observe (météo, événement), le sujet prend が."],
+      ["コーヒー＿ください。", "を", "が|に|で", "koohii __ kudasai.", "Un café, s'il vous plaît.", "Avec ください, la chose demandée prend を."],
+    ],
+  },
+  lieu: {
+    title: "に・で・へ…", icon: "に",
+    items: [
+      ["{七時|しちじ}＿{起|お}きます。", "に", "で|を|が", "shichiji __ okimasu.", "Je me lève à 7 h.", "に marque un moment précis : une heure, une date, un jour."],
+      ["{図書館|としょかん}＿{勉強|べんきょう}します。", "で", "に|を|が", "toshokan __ benkyou shimasu.", "J'étudie à la bibliothèque.", "で marque le lieu où se déroule une action."],
+      ["{日本|にほん}＿{行|い}きたいです。", "に", "で|を|が", "nihon __ ikitai desu.", "Je veux aller au Japon.", "に (ou へ) marque la destination d'un déplacement."],
+      ["{部屋|へや}＿{猫|ねこ}がいます。", "に", "で|を|へ", "heya __ neko ga imasu.", "Il y a un chat dans la chambre.", "Avec いる / ある, le lieu où se trouve quelque chose prend に, pas で."],
+      ["バス＿{来|き}ました。", "で", "に|を|と", "basu __ kimashita.", "Je suis venu(e) en bus.", "で marque le moyen : transport, outil, langue…"],
+      ["お{箸|はし}＿{食|た}べます。", "で", "に|が|へ", "ohashi __ tabemasu.", "Je mange avec des baguettes.", "で marque l'outil avec lequel on fait l'action."],
+      ["{母|はは}＿{電話|でんわ}します。", "に", "で|を|の", "haha __ denwa shimasu.", "J'appelle ma mère.", "に marque la personne vers qui va l'action (à qui on téléphone, écrit, donne…)."],
+      ["{家|いえ}＿{帰|かえ}ります。", "に", "で|を|が", "ie __ kaerimasu.", "Je rentre à la maison.", "に (ou へ) marque la destination."],
+      ["{公園|こうえん}＿{遊|あそ}びます。", "で", "に|を|が", "kouen __ asobimasu.", "Je joue au parc.", "で : le lieu où l'on fait l'action (jouer)."],
+      ["{九時|くじ}＿{五時|ごじ}まで{働|はたら}きます。", "から", "に|で|を", "kuji __ goji made hatarakimasu.", "Je travaille de 9 h à 17 h.", "から = « à partir de », souvent associé à まで = « jusqu'à »."],
+      ["{東京|とうきょう}＿{住|す}んでいます。", "に", "で|を|が", "toukyou __ sunde imasu.", "J'habite à Tokyo.", "Avec 住む (habiter), le lieu prend に, pas で."],
+      ["{電車|でんしゃ}＿{乗|の}ります。", "に", "を|で|が", "densha __ norimasu.", "Je monte dans le train.", "Avec 乗る (monter dans), le véhicule prend に."],
+      ["レストラン＿{晩|ばん}ご{飯|はん}を{食|た}べました。", "で", "に|を|が", "resutoran __ bangohan o tabemashita.", "J'ai dîné au restaurant.", "で : le lieu de l'action (manger)."],
+      ["{夏休|なつやす}みは{七月|しちがつ}＿{始|はじ}まります。", "から", "で|を|と", "natsuyasumi wa shichigatsu __ hajimarimasu.", "Les vacances d'été commencent en juillet.", "から marque le point de départ dans le temps : « à partir de juillet »."],
+    ],
+  },
+  autres: {
+    title: "と・も・の・か…", icon: "も",
+    items: [
+      ["{友達|ともだち}＿{映画|えいが}を{見|み}ます。", "と", "を|で|に", "tomodachi __ eiga o mimasu.", "Je regarde un film avec un(e) ami(e).", "と = « avec » une personne."],
+      ["A：{私|わたし}は{学生|がくせい}です。 B：{私|わたし}＿{学生|がくせい}です。", "も", "を|に|と", "A: watashi wa gakusei desu. B: watashi __ gakusei desu.", "A : Je suis étudiant. B : Moi aussi, je suis étudiant.", "も = « aussi ». Il remplace は, が ou を."],
+      ["{私|わたし}＿{本|ほん}です。", "の", "を|で|に", "watashi __ hon desu.", "C'est mon livre.", "の relie deux noms : 私の本 = « le livre de moi », mon livre."],
+      ["パン＿{卵|たまご}を{買|か}いました。", "と", "が|で|に", "pan __ tamago o kaimashita.", "J'ai acheté du pain et des œufs.", "と relie des noms : « et » (liste complète). や est aussi possible."],
+      ["これは{何|なん}です＿。", "か", "を|の|と", "kore wa nan desu __.", "Qu'est-ce que c'est ?", "か en fin de phrase la transforme en question."],
+      ["{日本|にほん}＿{車|くるま}はいいです。", "の", "を|に|が", "nihon __ kuruma wa ii desu.", "Les voitures japonaises sont bien.", "の : « la voiture du Japon » = la voiture japonaise."],
+      ["{雨|あめ}です＿、{家|いえ}にいます。", "から", "の|を|に", "ame desu __, ie ni imasu.", "Comme il pleut, je reste à la maison.", "から après une phrase = « parce que »."],
+      ["{肉|にく}＿{魚|さかな}も{食|た}べます。", "も", "を|で|に", "niku __ sakana mo tabemasu.", "Je mange de la viande et du poisson aussi.", "A も B も = « A et B aussi »."],
+      ["A：いい{天気|てんき}です＿。 B：そうですね。", "ね", "を|の|に", "A: ii tenki desu __. B: sou desu ne.", "A : Il fait beau, hein ? B : Oui, c'est vrai.", "ね en fin de phrase cherche l'accord : « hein ? / n'est-ce pas ? »."],
+      ["{机|つくえ}の{上|うえ}に{本|ほん}＿ペンがあります。", "や", "を|で|に", "tsukue no ue ni hon __ pen ga arimasu.", "Sur le bureau, il y a des livres, des stylos, etc.", "や = « et » dans une liste non complète (« entre autres »)."],
+      ["{誰|だれ}＿{来|き}ませんでした。", "も", "を|で|に", "dare __ kimasen deshita.", "Personne n'est venu.", "Interrogatif + も + verbe négatif = « personne / rien / nulle part »."],
+      ["{先生|せんせい}＿{話|はな}しました。", "と", "を|で|の", "sensei __ hanashimashita.", "J'ai parlé avec le professeur.", "と = « avec » : on parle ensemble."],
+    ],
+  },
+};
+const PARTICLE_ROMAJI = { "は": "wa", "が": "ga", "を": "o", "に": "ni", "で": "de", "へ": "e", "と": "to", "も": "mo", "の": "no", "か": "ka", "や": "ya", "から": "kara", "まで": "made", "ね": "ne" };

@@ -8,7 +8,7 @@ const saveLearn = () => { try { localStorage.setItem(LEARN, JSON.stringify(learn
 // ---------- Points ----------
 const LEVEL_STEP = 200;
 const levelOf = (p) => Math.floor(p / LEVEL_STEP) + 1;
-function updatePill() { $("ptsPill").textContent = "⭐ " + learn.points.toLocaleString("fr-FR"); }
+function updatePill() { $("ptsPill").textContent = "⭐ " + fmt(learn.points); }
 function addPoints(n) {
   const before = levelOf(learn.points);
   learn.points += n; saveLearn(); updatePill(); pop($("ptsPill"));
@@ -41,13 +41,17 @@ function kanaItems(set) {
 const listItems = (src, key) => src[key].items.map(([ja, romaji, fr], i) => ({ id: String(i), ja, romaji, fr }));
 
 const DECKS = {};
+const GROUP_NAMES = { Kana: "Kana", Particules: L("Particules", "Particles"), Vocabulaire: L("Vocabulaire", "Vocabulary"), Calendrier: L("Calendrier", "Calendar"), Phrases: "Phrases" };
 DECKS["kana:hira"] = { group: "Kana", title: "Hiragana", icon: "あ", items: () => kanaItems("hira") };
 DECKS["kana:kata"] = { group: "Kana", title: "Katakana", icon: "ア", items: () => kanaItems("kata") };
+const particleItems = (k) => PARTICLES[k].items.map(([ja, answer, wrong, romaji, fr, why], i) => ({ id: k + i, ja, answer, wrong: wrong.split("|"), romaji, fr, why }));
+for (const k in PARTICLES) DECKS["part:" + k] = { group: "Particules", kind: "particle", title: PARTICLES[k].title, icon: PARTICLES[k].icon, items: () => particleItems(k) };
+DECKS["part:mix"] = { group: "Particules", kind: "particle", title: L("Tout mélangé", "All mixed"), icon: "🔀", items: () => Object.keys(PARTICLES).flatMap(particleItems) };
 const VOCAB_ICONS = { nombres: "一", temps: "日", nourriture: "食", lieux: "駅", verbes: "行", adjectifs: "大", personnes: "人" };
 const PHRASE_ICONS = { essentiels: "👋", presentation: "🙋", cafe: "☕", courses: "🛍️", chemin: "🧭", loisirs: "🎮", journee: "🌅", voyage: "✈️" };
 for (const k in VOCAB) DECKS["vocab:" + k] = { group: "Vocabulaire", title: VOCAB[k].title, icon: VOCAB_ICONS[k] || "語", items: () => listItems(VOCAB, k) };
 DECKS["cal:mots"] = {
-  group: "Calendrier", title: "Mes mots du jour", icon: "暦",
+  group: "Calendrier", title: L("Mes mots du jour", "My words of the day"), icon: "暦",
   items: () => [...new Set(Object.keys(learn.days).map((k) => wordFor(fromKey(k))))].map(([ja, romaji, fr]) => ({ id: ja, ja, romaji, fr })),
 };
 for (const k in PHRASES) DECKS["phr:" + k] = { group: "Phrases", title: PHRASES[k].title, icon: PHRASE_ICONS[k] || "💬", items: () => listItems(PHRASES, k) };
@@ -79,7 +83,7 @@ function practiceWithSakura(theme) {
 function pop(el) { el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 
 // ---------- Mot du jour + calendrier ----------
-const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const monthName = (d) => d.toLocaleDateString(LOCALE, { month: "long" });
 const cal = { month: null, sel: null };
 renderers.jour = function () {
   const v = $("view-jour"), today = startOfDay(new Date());
@@ -87,14 +91,14 @@ renderers.jour = function () {
   cal.month ||= new Date(today.getFullYear(), today.getMonth(), 1);
   const sel = cal.sel, w = wordFor(sel), key = dkey(sel), learned = !!learn.days[key];
   const isToday = key === dkey(today);
-  const dateLabel = sel.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  const dateLabel = sel.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" });
   const nLearned = Object.keys(learn.days).length;
 
   // grille du mois
   const m = cal.month, first = new Date(m.getFullYear(), m.getMonth(), 1);
   const nDays = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate();
   const offset = (first.getDay() + 6) % 7; // lundi en premier
-  let cells = ["L", "M", "M", "J", "V", "S", "D"].map((d) => `<span class="cal-wd">${d}</span>`).join("");
+  let cells = L("LMMJVSD", "MTWTFSS").split("").map((d) => `<span class="cal-wd">${d}</span>`).join("");
   cells += `<span class="cal-day blank"></span>`.repeat(offset);
   for (let i = 1; i <= nDays; i++) {
     const d = new Date(m.getFullYear(), m.getMonth(), i), k = dkey(d);
@@ -107,34 +111,34 @@ renderers.jour = function () {
   const atCurrentMonth = m.getFullYear() === today.getFullYear() && m.getMonth() === today.getMonth();
 
   v.innerHTML = `
-    <div class="panel-title"><h2>${isToday ? "Mot du jour" : "Mot du " + sel.getDate() + " " + MONTHS[sel.getMonth()]}</h2><p>${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p></div>
+    <div class="panel-title"><h2>${isToday ? L("Mot du jour", "Word of the day") : L(`Mot du ${sel.getDate()} ${monthName(sel)}`, `Word of ${monthName(sel)} ${sel.getDate()}`)}</h2><p>${dateLabel.charAt(0).toUpperCase() + dateLabel.slice(1)}</p></div>
     <div class="wotd ${learned ? "is-learned" : ""}">
-      ${learned ? `<span class="stamp">✓ Appris</span>` : ""}
+      ${learned ? `<span class="stamp">✓ ${L("Appris", "Learned")}</span>` : ""}
       <div class="big-ja" lang="ja">${toRuby(w[0])}</div>
       <div class="romaji">${esc(w[1])}</div>
       <div class="big-fr">${esc(w[2])}</div>
       <div class="example">
-        <button class="say" id="wEx" title="Écouter l'exemple">🔊</button>
+        <button class="say" id="wEx" title="${L("Écouter l'exemple", "Listen to the example")}">🔊</button>
         <div><div class="ja" lang="ja">${toRuby(w[3])}</div><div class="fr">${esc(w[4])}</div></div>
       </div>
       <div class="cta-row">
-        <button class="btn" id="wSay">🔊 Écouter</button>
-        ${learned ? "" : `<button class="btn gold" id="wLearn">✓ Je l'ai appris <small>+20 ⭐</small></button>`}
+        <button class="btn" id="wSay">🔊 ${L("Écouter", "Listen")}</button>
+        ${learned ? "" : `<button class="btn gold" id="wLearn">✓ ${L("Je l'ai appris", "I learned it")} <small>+20 ⭐</small></button>`}
       </div>
     </div>
     <div class="stats">
-      <div class="stat"><b>🔥 ${dayStreak()}</b><span>jour${dayStreak() > 1 ? "s" : ""} d'affilée</span></div>
-      <div class="stat"><b>📚 ${nLearned}</b><span>mot${nLearned > 1 ? "s" : ""} appris</span></div>
-      <div class="stat"><b>⭐ ${learn.points.toLocaleString("fr-FR")}</b><span>niveau ${levelOf(learn.points)}</span></div>
+      <div class="stat"><b>🔥 ${dayStreak()}</b><span>${P(dayStreak(), "jour d'affilée", "jours d'affilée", "day in a row", "days in a row")}</span></div>
+      <div class="stat"><b>📚 ${nLearned}</b><span>${P(nLearned, "mot appris", "mots appris", "word learned", "words learned")}</span></div>
+      <div class="stat"><b>⭐ ${fmt(learn.points)}</b><span>${L("niveau", "level")} ${levelOf(learn.points)}</span></div>
     </div>
     <div class="cal">
       <div class="cal-head">
-        <button class="btn small" id="calPrev" title="Mois précédent">‹</button>
-        <strong>${MONTHS[m.getMonth()]} ${m.getFullYear()}</strong>
-        <button class="btn small" id="calNext" title="Mois suivant" ${atCurrentMonth ? "disabled" : ""}>›</button>
+        <button class="btn small" id="calPrev" title="${L("Mois précédent", "Previous month")}">‹</button>
+        <strong>${monthName(m)} ${m.getFullYear()}</strong>
+        <button class="btn small" id="calNext" title="${L("Mois suivant", "Next month")}" ${atCurrentMonth ? "disabled" : ""}>›</button>
       </div>
       <div class="cal-grid">${cells}</div>
-      <p class="cal-help">Touche un jour passé pour revoir son mot. Les jours ✓ sont ajoutés au paquet « Mes mots du jour » dans Cartes.</p>
+      <p class="cal-help">${L("Touche un jour passé pour revoir son mot. Les jours ✓ sont ajoutés au paquet « Mes mots du jour » dans Cartes.", "Tap a past day to see its word again. Days marked ✓ are added to the \"My words of the day\" deck in Cards.")}</p>
     </div>`;
 
   $("wSay").onclick = () => speak(toPlain(w[0]));
@@ -144,7 +148,7 @@ renderers.jour = function () {
     const up = addPoints(20);
     renderers.jour(); updateWotdDot();
     pop(document.querySelector(".stamp"));
-    if (up) toast(`🎉 Niveau ${levelOf(learn.points)} atteint !`);
+    if (up) toast(L(`🎉 Niveau ${levelOf(learn.points)} atteint !`, `🎉 Level ${levelOf(learn.points)} reached!`));
   });
   $("calPrev").onclick = () => { cal.month = new Date(m.getFullYear(), m.getMonth() - 1, 1); renderers.jour(); };
   $("calNext").onclick = () => { if (!atCurrentMonth) { cal.month = new Date(m.getFullYear(), m.getMonth() + 1, 1); renderers.jour(); } };
@@ -177,17 +181,17 @@ renderers.kana = function () {
     c ? `<button class="kana" data-k="${kanaOf(c[0], set)}"><b lang="ja">${kanaOf(c[0], set)}</b><small>${c[1]}</small></button>` : `<span class="kana empty"></span>`
   ).join("") + "</div>";
   v.innerHTML = `
-    <div class="panel-title"><h2>Kana</h2><p>Touche un caractère pour l'écouter.</p></div>
+    <div class="panel-title"><h2>Kana</h2><p>${L("Touche un caractère pour l'écouter.", "Tap a character to hear it.")}</p></div>
     <div class="seg">
       <button data-set="hira" class="${set === "hira" ? "on" : ""}">ひらがな Hiragana</button>
       <button data-set="kata" class="${set === "kata" ? "on" : ""}">カタカナ Katakana</button>
     </div>
-    <h3 class="sec">De base</h3>${grid(KANA_ROWS, 5)}
-    <h3 class="sec">Avec ゛ et ゜ (dakuten)</h3>${grid(KANA_DAKUTEN, 5)}
-    <h3 class="sec">Combinaisons</h3>${grid(KANA_COMBO, 3)}
+    <h3 class="sec">${L("De base", "Basic")}</h3>${grid(KANA_ROWS, 5)}
+    <h3 class="sec">${L("Avec ゛ et ゜ (dakuten)", "With ゛ and ゜ (dakuten)")}</h3>${grid(KANA_DAKUTEN, 5)}
+    <h3 class="sec">${L("Combinaisons", "Combinations")}</h3>${grid(KANA_COMBO, 3)}
     <div class="cta-row">
-      <button class="btn gold" id="kanaCards">🃏 Réviser en cartes</button>
-      <button class="btn" id="kanaQuiz">🏆 Faire le quiz</button>
+      <button class="btn gold" id="kanaCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
+      <button class="btn" id="kanaQuiz">🏆 ${L("Faire le quiz", "Take the quiz")}</button>
     </div>`;
   v.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { learn.kanaSet = b.dataset.set; saveLearn(); renderers.kana(); }));
   v.querySelectorAll("button.kana").forEach((b) => (b.onclick = () => { speak(b.dataset.k); pop(b); }));
@@ -200,16 +204,16 @@ let phraseTheme = "essentiels";
 renderers.phrases = function () {
   const v = $("view-phrases"), t = PHRASES[phraseTheme];
   v.innerHTML = `
-    <div class="panel-title"><h2>Phrases utiles</h2><p>Écoute, répète à voix haute, puis entraîne-toi avec Sakura.</p></div>
+    <div class="panel-title"><h2>${L("Phrases utiles", "Useful phrases")}</h2><p>${L("Écoute, répète à voix haute, puis entraîne-toi avec Sakura.", "Listen, repeat out loud, then practice with Sakura.")}</p></div>
     <div class="chips">${Object.entries(PHRASES).map(([k, p]) => `<button data-k="${k}" class="${k === phraseTheme ? "on" : ""}">${esc(p.title)}</button>`).join("")}</div>
     <div class="phrase-list">${t.items.map(([ja, ro, fr], i) => `
       <div class="phrase">
-        <button class="say" data-i="${i}" title="Écouter">🔊</button>
+        <button class="say" data-i="${i}" title="${L("Écouter", "Listen")}">🔊</button>
         <div><div class="ja" lang="ja">${toRuby(ja)}</div><div class="romaji">${esc(ro)}</div><div class="fr">${esc(fr)}</div></div>
       </div>`).join("")}</div>
     <div class="cta-row">
-      <button class="btn gold" id="phrSakura">🌸 Pratiquer ce thème avec Sakura</button>
-      <button class="btn" id="phrCards">🃏 Réviser en cartes</button>
+      <button class="btn gold" id="phrSakura">🌸 ${L("Pratiquer ce thème avec Sakura", "Practice this topic with Sakura")}</button>
+      <button class="btn" id="phrCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
     </div>`;
   v.querySelectorAll(".chips button").forEach((b) => (b.onclick = () => { phraseTheme = b.dataset.k; renderers.phrases(); }));
   v.querySelectorAll(".say").forEach((b) => (b.onclick = () => { speak(toPlain(t.items[b.dataset.i][0])); pop(b); }));
@@ -227,21 +231,21 @@ function renderDecks() {
   const groups = {};
   for (const [id, d] of Object.entries(DECKS)) (groups[d.group] ||= []).push([id, d]);
   v.innerHTML = `
-    <div class="panel-title"><h2>Cartes</h2><p>Retourne la carte, puis dis si tu savais. Les cartes « à revoir » reviennent plus vite.</p></div>
+    <div class="panel-title"><h2>${L("Cartes", "Cards")}</h2><p>${L("Retourne la carte, puis dis si tu savais. Les cartes « à revoir » reviennent plus vite.", "Flip the card, then say whether you knew it. Cards marked \"review\" come back sooner.")}</p></div>
     <div class="seg">
-      <button data-dir="ja" class="${learn.dir === "ja" ? "on" : ""}">🇯🇵 JA → FR 🇫🇷</button>
-      <button data-dir="fr" class="${learn.dir === "fr" ? "on" : ""}">🇫🇷 FR → JA 🇯🇵</button>
+      <button data-dir="ja" class="${learn.dir === "ja" ? "on" : ""}">${L("🇯🇵 JA → FR 🇫🇷", "🇯🇵 JA → EN 🇬🇧")}</button>
+      <button data-dir="fr" class="${learn.dir === "fr" ? "on" : ""}">${L("🇫🇷 FR → JA 🇯🇵", "🇬🇧 EN → JA 🇯🇵")}</button>
     </div>` +
     Object.entries(groups).map(([g, decks]) => {
       decks = decks.filter(([, d]) => d.items().length);
       if (!decks.length) return "";
-      return `<h3 class="sec">${g}</h3><div class="deck-grid">` + decks.map(([id, d]) => {
+      return `<h3 class="sec">${GROUP_NAMES[g] || g}</h3>${g === "Particules" ? PARTICLE_MEMO : ""}<div class="deck-grid">` + decks.map(([id, d]) => {
       const total = d.items().length, known = [...knownSet(id)].filter((x) => d.items().some((it) => it.id === x)).length, pct = Math.round((known / total) * 100);
       return `<button class="deck ${known === total ? "done" : ""}" data-id="${id}">
         <span class="deck-icon" lang="ja">${esc(d.icon)}</span>
         <span class="deck-title">${esc(d.title)}</span>
         <span class="bar"><i style="width:${pct}%"></i></span>
-        <span class="deck-count">${known === total ? "★ Maîtrisé" : `${known}/${total}`}</span>
+        <span class="deck-count">${known === total ? L("★ Maîtrisé", "★ Mastered") : `${known}/${total}`}</span>
       </button>`;
     }).join("") + "</div>";
     }).join("");
@@ -274,19 +278,21 @@ function cardFaces(it) {
 }
 
 function renderCard() {
+  if (DECKS[session.deck].kind === "particle" && session.queue.length) return renderParticle();
   const v = $("view-cards"), s = session, d = DECKS[s.deck];
   const total = s.items.length, known = knownSet(s.deck).size;
   const head = `<div class="deck-head">
-      <button class="btn small" id="cardBack">← Paquets</button>
-      <div><strong>${esc(d.title)}</strong><div class="muted">${s.review ? "Révision complète" : `Maîtrisées : ${known}/${total}`}</div></div>
+      <button class="btn small" id="cardBack">← ${L("Paquets", "Decks")}</button>
+      <div><strong>${esc(d.title)}</strong><div class="muted">${s.review ? L("Révision complète", "Full review") : `${L("Maîtrisées :", "Mastered:")} ${known}/${total}`}</div></div>
     </div>`;
   if (!s.queue.length) {
     v.innerHTML = head + `<div class="finish">
-      <div class="finish-icon">🎉</div><h2>Paquet terminé !</h2>
-      <p>${known === total ? "Tu maîtrises toutes les cartes de ce paquet." : `${known}/${total} cartes maîtrisées.`}</p>
+      <div class="finish-icon">🎉</div><h2>${L("Paquet terminé !", "Deck finished!")}</h2>
+      <p>${known === total ? L("Tu maîtrises toutes les cartes de ce paquet.", "You've mastered every card in this deck.") : L(`${known}/${total} cartes maîtrisées.`, `${known}/${total} cards mastered.`)}</p>
+      ${s.pts ? `<div class="points-won">+${s.pts} ⭐</div>` : ""}
       <div class="cta-row">
-        <button class="btn gold" id="cardAgain">${known === total ? "Tout revoir" : "Continuer"}</button>
-        <button class="btn" id="cardReset">Réinitialiser</button>
+        <button class="btn gold" id="cardAgain">${known === total ? L("Tout revoir", "Review all") : L("Continuer", "Continue")}</button>
+        <button class="btn" id="cardReset">${L("Réinitialiser", "Reset")}</button>
       </div></div>`;
     $("cardAgain").onclick = () => openDeck(s.deck, known === total);
     $("cardReset").onclick = () => { delete learn.known[s.deck]; saveLearn(); openDeck(s.deck); };
@@ -296,14 +302,14 @@ function renderCard() {
   const it = s.queue[0], f = cardFaces(it);
   v.innerHTML = head + `
     <div class="card-stage">
-      <div class="left-count">${s.queue.length} restante${s.queue.length > 1 ? "s" : ""}</div>
-      <div class="flip ${s.flipped ? "flipped" : ""}" id="flip" role="button" tabindex="0" aria-label="Retourner la carte">
-        <div class="face front">${f.front}<span class="hint">Touche pour retourner</span></div>
-        <div class="face back">${f.back}<button class="say-btn" id="cardSay" title="Écouter">🔊</button></div>
+      <div class="left-count">${s.queue.length} ${P(s.queue.length, "restante", "restantes", "left", "left")}</div>
+      <div class="flip ${s.flipped ? "flipped" : ""}" id="flip" role="button" tabindex="0" aria-label="${L("Retourner la carte", "Flip the card")}">
+        <div class="face front">${f.front}<span class="hint">${L("Touche pour retourner", "Tap to flip")}</span></div>
+        <div class="face back">${f.back}<button class="say-btn" id="cardSay" title="${L("Écouter", "Listen")}">🔊</button></div>
       </div>
       <div class="answer ${s.flipped ? "" : "invisible"}">
-        <button class="btn red" id="cardAgainOne">😕 À revoir</button>
-        <button class="btn green" id="cardKnow">😊 Je savais</button>
+        <button class="btn red" id="cardAgainOne">😕 ${L("À revoir", "Review")}</button>
+        <button class="btn green" id="cardKnow">😊 ${L("Je savais", "I knew it")}</button>
       </div>
     </div>`;
   const flip = () => { if (s.flipped) return; s.flipped = true; renderCard(); speak(toPlain(it.ja)); };
@@ -319,20 +325,102 @@ function renderCard() {
 }
 function closeDeck() { session = null; renderDecks(); }
 
+// ---------- Particules : phrases à trous ----------
+const MEMO_ROWS = [
+  ["は", "wa", "thème : « quant à… »", "topic: \"as for…\""],
+  ["が", "ga", "sujet ; avec 好き, 分かる, いる/ある ; après 誰, 何", "subject; with 好き, 分かる, いる/ある; after 誰, 何"],
+  ["を", "o", "complément d'objet direct", "direct object"],
+  ["に", "ni", "heure précise, destination, lieu où l'on est, « à qui »", "specific time, destination, where something is, \"to whom\""],
+  ["で", "de", "lieu d'une action, moyen, outil", "place of an action, means, tool"],
+  ["へ", "e", "direction (« vers »)", "direction (\"towards\")"],
+  ["と", "to", "« avec » une personne ; « et » (liste complète)", "\"with\" a person; \"and\" (complete list)"],
+  ["や", "ya", "« et » (liste incomplète)", "\"and\" (incomplete list)"],
+  ["も", "mo", "« aussi » (remplace は, が, を)", "\"too / also\" (replaces は, が, を)"],
+  ["の", "no", "« de » entre deux noms (possession)", "links two nouns (possession: \"'s\")"],
+  ["から / まで", "kara / made", "« depuis » / « jusqu'à » ; から = « parce que »", "\"from\" / \"until\"; から = \"because\""],
+  ["か / ね", "ka / ne", "fin de phrase : question / « n'est-ce pas ? »", "end of sentence: question / \"right?\""],
+];
+const PARTICLE_MEMO = `<details class="memo">
+  <summary>📖 ${L("Mémo des particules", "Particle cheat sheet")}</summary>
+  <table>${MEMO_ROWS.map(([p, r, fr, en]) => `<tr><td lang="ja">${p}</td><td>${r}</td><td>${esc(L(fr, en))}</td></tr>`).join("")}</table>
+</details>`;
+
+function renderParticle() {
+  const v = $("view-cards"), s = session, d = DECKS[s.deck], it = s.queue[0];
+  const total = s.items.length, known = knownSet(s.deck).size;
+  if (!it.options) it.options = shuffle([it.answer, ...it.wrong]);
+  const pick = s.picked, done = pick != null, ok = pick === it.answer;
+  const blank = done
+    ? `<span class="blank filled ${ok ? "good" : "bad"}">${esc(it.answer)}</span>`
+    : `<span class="blank">？</span>`;
+  const sentence = toRuby(it.ja).replace("＿", blank);
+  const romaji = esc(it.romaji).replace("__", done ? `<b>${PARTICLE_ROMAJI[it.answer]}</b>` : "___");
+  v.innerHTML = `
+    <div class="deck-head">
+      <button class="btn small" id="cardBack">← ${L("Paquets", "Decks")}</button>
+      <div><strong>${L("Particules", "Particles")} · ${esc(d.title)}</strong><div class="muted">${s.review ? L("Révision complète", "Full review") : `${L("Maîtrisées :", "Mastered:")} ${known}/${total}`} · ${s.queue.length} ${P(s.queue.length, "restante", "restantes", "left", "left")}</div></div>
+      <span class="qpts">⭐ ${s.pts || 0}</span>
+    </div>
+    <div class="part-card ${done ? (ok ? "good" : "bad") : ""}">
+      <div class="part-ja" lang="ja">${sentence}</div>
+      <div class="romaji">${romaji}</div>
+      <div class="part-fr">${esc(it.fr)}</div>
+      ${done && ok ? `<span class="gain">+5</span>` : ""}
+    </div>
+    <div class="options part-opts">${it.options.map((o) => {
+      const cls = !done ? "" : o === it.answer ? "right" : o === pick ? "wrong" : "dim";
+      return `<button class="opt ${cls}" ${done ? "disabled" : ""}><span lang="ja">${esc(o)}</span><small>${PARTICLE_ROMAJI[o]}</small></button>`;
+    }).join("")}</div>
+    ${done ? `
+      <div class="why ${ok ? "good" : "bad"}"><b>${ok ? L("✓ Bravo !", "✓ Well done!") : L("✗ Pas tout à fait.", "✗ Not quite.")}</b> ${esc(it.why)}</div>
+      <div class="cta-row">
+        <button class="btn" id="partSay">🔊 ${L("Écouter", "Listen")}</button>
+        <button class="btn gold" id="partNext">${L("Suivant →", "Next →")}</button>
+      </div>` : ""}`;
+
+  v.querySelectorAll(".opt").forEach((b, i) => (b.onclick = () => {
+    s.picked = it.options[i];
+    if (s.picked === it.answer) {
+      const k = knownSet(s.deck); k.add(it.id); learn.known[s.deck] = [...k]; saveLearn();
+      s.pts = (s.pts || 0) + 5; addPoints(5);
+    }
+    renderParticle();
+    speakParticle(it);
+  }));
+  if (done) {
+    $("partSay").onclick = () => speakParticle(it);
+    $("partNext").onclick = () => {
+      s.queue.shift();
+      if (!ok) s.queue.splice(Math.min(3, s.queue.length), 0, it); // une erreur revient 3 phrases plus loin
+      it.options = null; s.picked = null;
+      renderCard();
+    };
+  }
+  $("cardBack").onclick = closeDeck;
+}
+
+function speakParticle(it) {
+  speak(toPlain(it.ja.replace("＿", it.answer)).replace(/[AB]：/g, ""));
+}
+
 // Raccourcis clavier sur PC : espace = retourner, ← = à revoir, → = je savais
 document.addEventListener("keydown", (e) => {
   if (document.body.dataset.view !== "cards" || !session || e.target.matches("input, textarea, select")) return;
   if (e.key === "ArrowLeft") $("cardAgainOne")?.click();
   if (e.key === "ArrowRight") $("cardKnow")?.click();
   if (e.key === " " && !session.flipped) { e.preventDefault(); $("flip")?.click(); }
+  if (DECKS[session.deck].kind === "particle") {
+    if (/^[1-4]$/.test(e.key)) document.querySelectorAll(".part-opts .opt")[e.key - 1]?.click();
+    if (e.key === "Enter") $("partNext")?.click();
+  }
 });
 
 // ---------- Quiz ----------
 const QUIZ_LEN = 10;
 const QUIZ_MODES = {
-  hira: { title: "Hiragana", icon: "あ", desc: "Trouve la bonne lecture" },
-  kata: { title: "Katakana", icon: "ア", desc: "Trouve la bonne lecture" },
-  vocab: { title: "Vocabulaire", icon: "語", desc: "Trouve la bonne traduction" },
+  hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la bonne lecture", "Find the right reading") },
+  kata: { title: "Katakana", icon: "ア", desc: L("Trouve la bonne lecture", "Find the right reading") },
+  vocab: { title: L("Vocabulaire", "Vocabulary"), icon: "語", desc: L("Trouve la bonne traduction", "Find the right translation") },
 };
 let quiz = null;
 
@@ -340,20 +428,20 @@ renderers.quiz = function () { quiz ? renderQuestion() : renderQuizHome(); };
 
 function renderQuizHome() {
   $("view-quiz").innerHTML = `
-    <div class="panel-title"><h2>Quiz</h2><p>${QUIZ_LEN} questions. Bonne réponse : 10 ⭐, plus un bonus de série. Sans faute : +50 ⭐ !</p></div>
+    <div class="panel-title"><h2>Quiz</h2><p>${L(`${QUIZ_LEN} questions. Bonne réponse : 10 ⭐, plus un bonus de série. Sans faute : +50 ⭐ !`, `${QUIZ_LEN} questions. Right answer: 10 ⭐, plus a streak bonus. Perfect score: +50 ⭐!`)}</p></div>
     <div class="level-card">
-      <div class="lvl-badge"><small>NIV.</small>${levelOf(learn.points)}</div>
+      <div class="lvl-badge"><small>${L("NIV.", "LVL")}</small>${levelOf(learn.points)}</div>
       <div class="lvl-info">
-        <strong>⭐ ${learn.points.toLocaleString("fr-FR")} points</strong>
+        <strong>⭐ ${fmt(learn.points)} points</strong>
         <span class="bar"><i style="width:${((learn.points % LEVEL_STEP) / LEVEL_STEP) * 100}%"></i></span>
-        <span class="muted">${LEVEL_STEP - (learn.points % LEVEL_STEP)} points avant le niveau ${levelOf(learn.points) + 1}</span>
+        <span class="muted">${L(`${LEVEL_STEP - (learn.points % LEVEL_STEP)} points avant le niveau ${levelOf(learn.points) + 1}`, `${LEVEL_STEP - (learn.points % LEVEL_STEP)} points to level ${levelOf(learn.points) + 1}`)}</span>
       </div>
     </div>
     <div class="mode-list">${Object.entries(QUIZ_MODES).map(([k, m]) => `
       <button class="mode" data-k="${k}">
         <span class="deck-icon" lang="ja">${m.icon}</span>
         <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}</span></span>
-        <span class="best">${learn.best[k] != null ? `${stars(learn.best[k])}<br><small>Record : ${learn.bestPts[k] ?? 0} ⭐</small>` : "Nouveau"}</span>
+        <span class="best">${learn.best[k] != null ? `${stars(learn.best[k])}<br><small>${L("Record :", "Best:")} ${learn.bestPts[k] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
       </button>`).join("")}</div>`;
   document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
 }
@@ -396,15 +484,15 @@ function renderQuestion() {
     const record = z.pts > z.prevPts && z.prevPts >= 0;
     v.innerHTML = `<div class="finish">
       <div class="stars">${stars(z.score)}</div>
-      <h2>${z.score}/${QUIZ_LEN} bonnes réponses</h2>
+      <h2>${z.score}/${QUIZ_LEN} ${L("bonnes réponses", "correct answers")}</h2>
       <div class="points-won">+${z.pts} ⭐</div>
-      ${z.bonus ? `<p>Dont +${z.bonus} ⭐ de bonus sans faute !</p>` : ""}
-      <p>${record ? "🏅 Nouveau record de points ! " : ""}${z.score === QUIZ_LEN ? "Parfait !" : z.score >= 7 ? "Très bien !" : "Continue, ça vient !"}</p>
-      ${z.levelUp ? `<p class="lvl-up">🎉 Niveau ${levelOf(learn.points)} atteint !</p>` : ""}
-      <p class="muted">Total : ${learn.points.toLocaleString("fr-FR")} ⭐ · niveau ${levelOf(learn.points)}</p>
+      ${z.bonus ? `<p>${L(`Dont +${z.bonus} ⭐ de bonus sans faute !`, `Including a +${z.bonus} ⭐ perfect-score bonus!`)}</p>` : ""}
+      <p>${record ? L("🏅 Nouveau record de points ! ", "🏅 New points record! ") : ""}${z.score === QUIZ_LEN ? L("Parfait !", "Perfect!") : z.score >= 7 ? L("Très bien !", "Great job!") : L("Continue, ça vient !", "Keep going, you're getting there!")}</p>
+      ${z.levelUp ? `<p class="lvl-up">${L(`🎉 Niveau ${levelOf(learn.points)} atteint !`, `🎉 Level ${levelOf(learn.points)} reached!`)}</p>` : ""}
+      <p class="muted">${L("Total :", "Total:")} ${fmt(learn.points)} ⭐ · ${L("niveau", "level")} ${levelOf(learn.points)}</p>
       <div class="cta-row">
-        <button class="btn gold" id="qAgain">Rejouer</button>
-        <button class="btn" id="qHome">Autres quiz</button>
+        <button class="btn gold" id="qAgain">${L("Rejouer", "Play again")}</button>
+        <button class="btn" id="qHome">${L("Autres quiz", "Other quizzes")}</button>
       </div></div>`;
     $("qAgain").onclick = () => startQuiz(z.mode);
     $("qHome").onclick = () => { quiz = null; renderQuizHome(); };
@@ -427,9 +515,9 @@ function renderQuestion() {
       const cls = !a ? "" : o === q.a ? "right" : o === a ? "wrong" : "dim";
       return `<button class="opt ${cls}" ${a ? "disabled" : ""}>${esc(o)}</button>`;
     }).join("")}</div>
-    ${a && a !== q.a ? `<div class="cta-row"><button class="btn gold" id="qNext">Suivant →</button></div>` : ""}`;
+    ${a && a !== q.a ? `<div class="cta-row"><button class="btn gold" id="qNext">${L("Suivant →", "Next →")}</button></div>` : ""}`;
   $("qQuit").onclick = () => {
-    if (z.pts && !confirm(`Quitter ? Les ${z.pts} ⭐ de cette partie seront perdus.`)) return;
+    if (z.pts && !confirm(L(`Quitter ? Les ${z.pts} ⭐ de cette partie seront perdus.`, `Quit? The ${z.pts} ⭐ from this round will be lost.`))) return;
     quiz = null; renderQuizHome();
   };
   v.querySelectorAll(".opt").forEach((b, idx) => (b.onclick = () => {

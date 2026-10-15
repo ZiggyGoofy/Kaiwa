@@ -319,6 +319,51 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 }
 .wotd-body .panel-title { padding-right: 44px; }
 
+/* ============ Particules ============ */
+.memo { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; }
+.memo summary { cursor: pointer; font-weight: 700; }
+.memo table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: .9rem; }
+.memo td { padding: 5px 6px; border-top: 1px solid var(--border); vertical-align: top; }
+.memo td:first-child { font-size: 1.1rem; font-weight: 700; white-space: nowrap; color: var(--accent); }
+.memo td:nth-child(2) { color: var(--muted); font-style: italic; white-space: nowrap; }
+.memo td:first-child, .memo td:nth-child(2) { width: 1%; }
+.deck-head .qpts { margin-left: auto; }
+.part-card {
+  background: var(--panel); border: 2px solid var(--border); border-radius: 20px;
+  padding: 22px 14px 16px; text-align: center; margin-bottom: 16px; transition: border-color .2s, background .2s;
+}
+.part-card.good { border-color: var(--b-green); }
+.part-card.bad { border-color: var(--b-red); }
+.part-ja { font-size: clamp(1.3rem, 6vw, 1.8rem); line-height: 2.2; }
+.part-fr { color: var(--muted); margin-top: 6px; }
+.blank {
+  display: inline-block; min-width: 2.2em; padding: 0 .3em; margin: 0 .15em; line-height: 1.3;
+  border-bottom: 3px solid var(--b-blue); color: var(--b-blue); font-weight: 800;
+}
+.blank.filled.good { border-color: var(--b-green); color: var(--b-green-d); background: color-mix(in srgb, var(--b-green) 15%, transparent); border-radius: 6px 6px 0 0; }
+.blank.filled.bad { border-color: var(--b-red); color: var(--b-red-d); background: color-mix(in srgb, var(--b-red) 12%, transparent); border-radius: 6px 6px 0 0; }
+.part-opts .opt { display: flex; flex-direction: column; align-items: center; gap: 0; font-size: 1.6rem; padding: 10px 8px; }
+.part-opts .opt small { font-size: .8rem; opacity: .7; font-weight: 600; }
+.why { margin-top: 14px; padding: 10px 14px; border-radius: 12px; background: var(--panel); border-left: 4px solid var(--b-green); }
+.why.bad { border-left-color: var(--b-red); }
+
+/* ============ Choix de la langue ============ */
+.lang-dialog { width: min(420px, calc(100vw - 32px)); padding: 0; border-radius: 22px; background: var(--panel); }
+.lang-dialog::backdrop { background: linear-gradient(180deg, #2453b8, #0c1b42); }
+.lang-box { padding: 28px 22px 24px; text-align: center; }
+.lang-logo { font-size: 3rem; font-weight: 800; color: var(--navy); line-height: 1.1; }
+.lang-logo::first-letter { color: var(--accent); }
+.lang-box h2 { margin: 4px 0 6px; }
+.lang-box p { color: var(--muted); margin: 0 0 20px; }
+.lang-choices { display: flex; flex-direction: column; gap: 12px; }
+.lang-btn {
+  display: flex; align-items: center; justify-content: center; gap: 12px; padding: 14px; font-size: 1.2rem; font-weight: 800;
+  background: linear-gradient(180deg, #ffffff, #e7e3fb); border: 2px solid #0f2a6b; border-radius: 16px; box-shadow: 0 4px 0 #0f2a6b;
+  color: #1b2240;
+}
+.lang-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #0f2a6b; }
+.lang-btn .flag { font-size: 1.8rem; }
+
 /* =====================================================
    MOBILE — interface « menu de jeu »
    barre d'onglets en bas, boutons en relief, titres épais
@@ -502,4 +547,16 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   }
   .wotd-dialog::backdrop { background: rgba(5,10,30,.7); }
   .close-x { border-color: #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; }
+
+  .memo { border: 2px solid #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; background: #f6f3ff; }
+  .memo summary { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: 1.05rem; }
+  .part-card { border: 2px solid #0f2a6b; box-shadow: 0 6px 0 #0f2a6b; background: linear-gradient(180deg, #ffffff, #ece8ff); border-radius: 22px; }
+  .part-card.good { background: linear-gradient(180deg, #f2fff2, #c9f5cc); border-color: #0f2a6b; }
+  .part-card.bad { background: linear-gradient(180deg, #fff2f2, #ffd0d0); border-color: #0f2a6b; }
+  .why { border: 2px solid #0f2a6b; border-left-width: 6px; box-shadow: 0 3px 0 #0f2a6b; background: #f6f3ff; }
+  .why.good { border-left-color: #3fbf4f; }
+  .why.bad { border-left-color: #e84a47; }
+
+  .lang-dialog { border: 3px solid #0f2a6b; box-shadow: 0 6px 0 #08132f; }
+  .lang-box h2, .lang-btn { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
 }

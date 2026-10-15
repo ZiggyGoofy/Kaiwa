@@ -4,37 +4,37 @@
 
 const PROVIDERS = {
   groq: {
-    name: "Groq — gratuit",
+    name: L("Groq — gratuit", "Groq — free"),
     kind: "openai",
     url: "https://api.groq.com/openai/v1/chat/completions",
     keyHint: "gsk_…",
     keyUrl: "https://console.groq.com/keys",
-    help: "Gratuit, sans carte bancaire, environ 1 000 messages par jour.",
-    models: [["openai/gpt-oss-120b", "GPT-OSS 120B (recommandé)"], ["qwen/qwen3.8-27b", "Qwen 3.8 27B"]],
+    help: L("Gratuit, sans carte bancaire, environ 1 000 messages par jour.", "Free, no credit card, about 1,000 messages per day."),
+    models: [["openai/gpt-oss-120b", L("GPT-OSS 120B (recommandé)", "GPT-OSS 120B (recommended)")], ["qwen/qwen3.8-27b", "Qwen 3.8 27B"]],
   },
   openrouter: {
-    name: "OpenRouter — modèles gratuits",
+    name: L("OpenRouter — modèles gratuits", "OpenRouter — free models"),
     kind: "openai",
     url: "https://openrouter.ai/api/v1/chat/completions",
     keyHint: "sk-or-…",
     keyUrl: "https://openrouter.ai/keys",
-    help: "Gratuit, sans carte bancaire, environ 50 messages par jour avec les modèles « :free ».",
+    help: L("Gratuit, sans carte bancaire, environ 50 messages par jour avec les modèles « :free ».", "Free, no credit card, about 50 messages per day with \":free\" models."),
     models: [], // chargés depuis openrouter.ai à l'ouverture des réglages
   },
   anthropic: {
-    name: "Claude — payant",
+    name: L("Claude — payant", "Claude — paid"),
     kind: "anthropic",
     url: "https://api.anthropic.com/v1/messages",
     keyHint: "sk-ant-…",
     keyUrl: "https://console.anthropic.com",
-    help: "Meilleure qualité, payant à l'usage (quelques centimes par conversation).",
+    help: L("Meilleure qualité, payant à l'usage (quelques centimes par conversation).", "Best quality, pay as you go (a few cents per conversation)."),
     models: [["claude-haiku-5-5", "Claude Haiku 5.5"], ["claude-sonnet-5-5", "Claude Sonnet 5.5"]],
   },
 };
 const STORE = "kaiwa-state-v1";
 const SETTINGS = "kaiwa-settings-v1";
 
-const SCENARIOS = {
+const SCENARIOS = LANG === "en" ? CONTENT_EN.scenarios : {
   libre: "Conversation libre",
   presentation: "Se présenter (自己紹介)",
   cafe: "Commander au café",
@@ -45,7 +45,10 @@ const SCENARIOS = {
   voyage: "Voyage au Japon",
 };
 
-const SYSTEM_PROMPT = (scenario) => `Tu es Sakura, une partenaire de conversation japonaise bienveillante pour un apprenant francophone de niveau DÉBUTANT (JLPT N5-N4).
+const LEARNER_LANG = L("français", "anglais");
+const SYSTEM_PROMPT = (scenario) => `Tu es Sakura, une partenaire de conversation japonaise bienveillante pour un apprenant de niveau DÉBUTANT (JLPT N5-N4) dont la langue est le ${LEARNER_LANG}.
+
+LANGUE DE L'APPRENANT : ${LEARNER_LANG.toUpperCase()}. Toutes les traductions, explications et traductions de suggestions doivent être écrites en ${LEARNER_LANG} (les noms des champs JSON restent inchangés).
 
 Thème de la conversation : ${SCENARIOS[scenario]}.
 
@@ -53,15 +56,15 @@ Règles de conversation :
 - Réponds TOUJOURS en japonais simple, en style poli (です/ます), phrases courtes (1 à 3 phrases).
 - Vocabulaire et grammaire de niveau N5-N4 ; évite les kanji rares.
 - Termine généralement par une question simple pour relancer la conversation.
-- Si l'apprenant écrit en français (parce qu'il bloque), aide-le avec bienveillance : la correction montre comment le dire en japonais, puis continue la conversation en japonais.
+- Si l'apprenant écrit en ${LEARNER_LANG} (parce qu'il bloque), aide-le avec bienveillance : la correction montre comment le dire en japonais, puis continue la conversation en japonais.
 - Reste dans le thème, mais suis l'apprenant s'il dérive.
 
 Format de la réponse :
 - Furigana : dans "reply" et "correction.corrected" et "suggestions[].ja", annote CHAQUE mot contenant des kanji avec la syntaxe {漢字|かんじ}. Exemples : {日本|にほん}に{行|い}きます。 / {食|た}べたいです。 Les okurigana restent hors des accolades. N'annote pas les mots en kana.
 - "romaji" : transcription Hepburn complète de la réponse.
-- "translation_fr" : traduction française naturelle de la réponse.
-- "correction" : analyse le DERNIER message de l'apprenant. S'il est correct et naturel, has_error=false. Sinon has_error=true, "corrected" = version corrigée et naturelle, "explanation_fr" = explication courte et claire en français (1-2 phrases). Pour le message d'ouverture (pas encore de message de l'apprenant), has_error=false.
-- "suggestions" : 2 réponses courtes et simples que l'apprenant pourrait donner à ta question, avec leur traduction française.`;
+- "translation_fr" : traduction naturelle de la réponse, en ${LEARNER_LANG}.
+- "correction" : analyse le DERNIER message de l'apprenant. S'il est correct et naturel, has_error=false. Sinon has_error=true, "corrected" = version corrigée et naturelle, "explanation_fr" = explication courte et claire en ${LEARNER_LANG} (1-2 phrases). Pour le message d'ouverture (pas encore de message de l'apprenant), has_error=false.
+- "suggestions" : 2 réponses courtes et simples que l'apprenant pourrait donner à ta question, avec leur traduction en ${LEARNER_LANG} (champ "fr").`;
 
 const RESPOND_TOOL = {
   name: "respond",
@@ -133,14 +136,14 @@ function render() {
   const visible = state.messages.filter((m) => !m.hidden);
   if (!visible.length && !busy) {
     chat.innerHTML = `<div class="welcome"><p><strong>こんにちは！</strong></p>
-      <p>Choisis un thème, puis appuie sur <strong>＋ Nouvelle</strong> pour que Sakura lance la conversation — ou écris-lui directement.</p>
-      ${hasKey() ? "" : `<p>⚙ Pour discuter avec Sakura, ajoute une clé dans les réglages. <strong>Groq est gratuit</strong> (sans carte bancaire). Les autres onglets fonctionnent sans clé.</p><p><button class="btn gold" onclick="openSettings()">⚙ Configurer</button></p>`}</div>`;
+      <p>${L("Choisis un thème, puis appuie sur <strong>＋ Nouvelle</strong> pour que Sakura lance la conversation — ou écris-lui directement.", "Pick a topic, then tap <strong>＋ New</strong> so Sakura starts the conversation — or just write to her.")}</p>
+      ${hasKey() ? "" : `<p>${L("⚙ Pour discuter avec Sakura, ajoute une clé dans les réglages. <strong>Groq est gratuit</strong> (sans carte bancaire). Les autres onglets fonctionnent sans clé.", "⚙ To chat with Sakura, add a key in the settings. <strong>Groq is free</strong> (no credit card). The other tabs work without a key.")}</p><p><button class="btn gold" onclick="openSettings()">⚙ ${L("Configurer", "Set up")}</button></p>`}</div>`;
   }
   state.messages.forEach((m, i) => {
     if (m.hidden) return;
     chat.appendChild(m.role === "user" ? userNode(m) : botNode(m, i));
   });
-  if (busy) chat.insertAdjacentHTML("beforeend", `<div class="typing">Sakura écrit…</div>`);
+  if (busy) chat.insertAdjacentHTML("beforeend", `<div class="typing">${L("Sakura écrit…", "Sakura is typing…")}</div>`);
   renderSuggestions();
   chat.scrollTop = chat.scrollHeight;
 }
@@ -153,7 +156,7 @@ function userNode(m) {
   if (c) {
     if (c.has_error && c.corrected) {
       el.insertAdjacentHTML("beforeend", `<div class="correction">
-        <div class="label">✏️ Plus naturel :</div>
+        <div class="label">✏️ ${L("Plus naturel :", "More natural:")}</div>
         <div class="fixed" lang="ja">${toRuby(c.corrected)}</div>
         ${c.explanation_fr ? `<div>${esc(c.explanation_fr)}</div>` : ""}</div>`);
     } else if (!c.has_error) {
@@ -171,8 +174,8 @@ function botNode(m, i) {
     <div class="romaji">${esc(d.romaji)}</div>
     ${m.showFr ? `<div class="translation">${esc(d.translation_fr)}</div>` : ""}
     <div class="tools">
-      <button data-act="speak">🔊 Écouter</button>
-      <button data-act="fr">${m.showFr ? "Masquer" : "🇫🇷 Traduire"}</button>
+      <button data-act="speak">🔊 ${L("Écouter", "Listen")}</button>
+      <button data-act="fr">${m.showFr ? L("Masquer", "Hide") : L("🇫🇷 Traduire", "🇬🇧 Translate")}</button>
     </div>`;
   el.querySelector('[data-act="speak"]').onclick = () => speak(toPlain(d.reply));
   el.querySelector('[data-act="fr"]').onclick = () => { m.showFr = !m.showFr; save(); render(); };
@@ -205,7 +208,7 @@ IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni 
 
 async function askAI() {
   const p = provider();
-  if (!hasKey()) { openSettings(); throw new Error("Ajoute une clé API dans les réglages (Groq est gratuit)."); }
+  if (!hasKey()) { openSettings(); throw new Error(L("Ajoute une clé API dans les réglages (Groq est gratuit).", "Add an API key in the settings (Groq is free).")); }
   const history = state.messages.map((m) => ({ role: m.role, content: m.text }));
   const data = p.kind === "anthropic" ? await askAnthropic(p, history) : await askOpenAI(p, history);
   return normalize(data);
@@ -216,17 +219,17 @@ async function post(p, url, headers, body) {
   try {
     res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) });
   } catch {
-    throw new Error(`Impossible de joindre ${p.name.split(" —")[0]} depuis le navigateur (pas de réseau, ou appel bloqué). ` +
-      (settings.provider === "groq" ? "Essaie OpenRouter dans ⚙ Réglages." : "Vérifie ta connexion."));
+    throw new Error(L(`Impossible de joindre ${p.name.split(" —")[0]} depuis le navigateur (pas de réseau, ou appel bloqué). `, `Can't reach ${p.name.split(" —")[0]} from the browser (no network, or the call is blocked). `) +
+      (settings.provider === "groq" ? L("Essaie OpenRouter dans ⚙ Réglages.", "Try OpenRouter in ⚙ Settings.") : L("Vérifie ta connexion.", "Check your connection.")));
   }
   if (res.ok) return res.json();
   let detail = "";
   try { const j = await res.json(); detail = j.error?.message || j.message || ""; } catch {}
   const err = new Error(
-    res.status === 401 || res.status === 403 ? "Clé API refusée. Vérifie-la dans ⚙ Réglages." :
-    res.status === 429 ? "Limite gratuite atteinte pour le moment. Attends une minute (ou demain si c'est la limite du jour), ou change de fournisseur dans ⚙." :
-    res.status === 402 ? "Ce modèle n'est pas gratuit ou ton solde est à zéro. Choisis un modèle « :free » dans ⚙." :
-    `Erreur API (${res.status}) ${detail}`);
+    res.status === 401 || res.status === 403 ? L("Clé API refusée. Vérifie-la dans ⚙ Réglages.", "API key rejected. Check it in ⚙ Settings.") :
+    res.status === 429 ? L("Limite gratuite atteinte pour le moment. Attends une minute (ou demain si c'est la limite du jour), ou change de fournisseur dans ⚙.", "Free limit reached for now. Wait a minute (or until tomorrow if it's the daily limit), or switch provider in ⚙.") :
+    res.status === 402 ? L("Ce modèle n'est pas gratuit ou ton solde est à zéro. Choisis un modèle « :free » dans ⚙.", "This model isn't free or your balance is zero. Pick a \":free\" model in ⚙.") :
+    L(`Erreur API (${res.status}) `, `API error (${res.status}) `) + detail);
   err.status = res.status;
   throw err;
 }
@@ -241,13 +244,13 @@ async function askAnthropic(p, messages) {
     tools: [RESPOND_TOOL], tool_choice: { type: "tool", name: "respond" }, messages,
   });
   const block = json.content?.find((b) => b.type === "tool_use");
-  if (!block) throw new Error("Réponse inattendue du modèle.");
+  if (!block) throw new Error(L("Réponse inattendue du modèle.", "Unexpected response from the model."));
   return block.input;
 }
 
 async function askOpenAI(p, history) {
   const model = settings.models[settings.provider];
-  if (!model) { openSettings(); throw new Error("Choisis un modèle dans ⚙ Réglages."); }
+  if (!model) { openSettings(); throw new Error(L("Choisis un modèle dans ⚙ Réglages.", "Pick a model in ⚙ Settings.")); }
   const headers = { authorization: "Bearer " + settings.keys[settings.provider] };
   if (settings.provider === "openrouter") { headers["HTTP-Referer"] = location.origin; headers["X-Title"] = "Kaiwa"; }
   const body = {
@@ -350,11 +353,11 @@ function speak(text) {
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false;
 if (!SR) {
-  $("btnMic").title = "Dictée non disponible sur ce navigateur (utilise Chrome ou Edge)";
+  $("btnMic").title = L("Dictée non disponible sur ce navigateur (utilise Chrome ou Edge)", "Dictation isn't available in this browser (use Chrome or Edge)");
   $("btnMic").style.opacity = .4;
 }
 $("btnMic").onclick = () => {
-  if (!SR) return showError("La dictée vocale n'est pas disponible ici. Utilise Chrome ou Edge.");
+  if (!SR) return showError(L("La dictée vocale n'est pas disponible ici. Utilise Chrome ou Edge.", "Voice dictation isn't available here. Use Chrome or Edge."));
   if (listening) return rec.stop();
   speechSynthesis?.cancel();
   rec = new SR();
@@ -366,7 +369,7 @@ $("btnMic").onclick = () => {
     const t = Array.from(e.results).map((r) => r[0].transcript).join("");
     input.value = before + t; autosize();
   };
-  rec.onerror = (e) => { if (e.error !== "no-speech" && e.error !== "aborted") showError("Micro : " + e.error); };
+  rec.onerror = (e) => { if (e.error !== "no-speech" && e.error !== "aborted") showError(L("Micro : ", "Microphone: ") + e.error); };
   rec.onend = () => {
     listening = false; $("btnMic").classList.remove("listening");
     if (settings.autoSend && input.value.trim() && input.value !== before) send(input.value);
@@ -416,10 +419,10 @@ let shownProvider = null;
 function fillProviderFields() {
   const key = $("provider").value, p = PROVIDERS[key];
   shownProvider = key;
-  $("keyLabel").textContent = "Clé API " + p.name.split(" —")[0];
+  $("keyLabel").textContent = L("Clé API " + p.name.split(" —")[0], p.name.split(" —")[0] + " API key");
   $("apiKey").placeholder = p.keyHint;
   $("apiKey").value = settings.keys[key] || "";
-  $("keyHelp").innerHTML = `${esc(p.help)} <a href="${p.keyUrl}" target="_blank" rel="noopener">Obtenir une clé</a>`;
+  $("keyHelp").innerHTML = `${esc(p.help)} <a href="${p.keyUrl}" target="_blank" rel="noopener">${L("Obtenir une clé", "Get a key")}</a>`;
   const msel = $("model");
   msel.innerHTML = "";
   p.models.forEach(([id, name]) => msel.add(new Option(name, id)));
@@ -428,7 +431,7 @@ function fillProviderFields() {
   if (current && p.models.some(([id]) => id === current)) msel.value = current;
   $("modelRow").hidden = !p.models.length;
   if (key === "openrouter" && !orModelsLoaded) {
-    $("keyHelp").insertAdjacentHTML("beforeend", "<br><em>Chargement de la liste des modèles gratuits…</em>");
+    $("keyHelp").insertAdjacentHTML("beforeend", `<br><em>${L("Chargement de la liste des modèles gratuits…", "Loading the list of free models…")}</em>`);
     loadOpenRouterModels().then(() => { if ($("provider").value === "openrouter") fillProviderFields(); });
   }
 }
@@ -449,10 +452,12 @@ function openSettings() {
   $("autoSend").checked = settings.autoSend;
   $("rate").value = settings.rate;
   $("rateVal").textContent = "×" + settings.rate;
+  $("langSelect").value = LANG;
   if (!$("settings").open) $("settings").showModal();
 }
 $("provider").onchange = () => { storeProviderFields(); fillProviderFields(); };
 $("btnSettings").onclick = openSettings;
+$("langSelect").onchange = (e) => { storeProviderFields(); save(); setLang(e.target.value); };
 $("rate").oninput = (e) => { $("rateVal").textContent = "×" + e.target.value; };
 $("settings").addEventListener("close", () => {
   storeProviderFields();
@@ -464,7 +469,11 @@ $("settings").addEventListener("close", () => {
 });
 
 // ---------- Démarrage ----------
+applyStaticText();
 applyToggles();
+document.querySelectorAll(".lang-btn").forEach((b) => (b.onclick = () => { $("langDialog").close(); setLang(b.dataset.lang); }));
+$("langDialog").addEventListener("cancel", (e) => e.preventDefault()); // on doit choisir une langue
+if (!LANG_CHOSEN) $("langDialog").showModal();
 // nettoie un éventuel tour inachevé (fermeture pendant une requête)
 if (state.messages.at(-1)?.role === "user") state.messages.pop();
 render();

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Kaiwa – Parler japonais</title>
+  <title>Kaiwa – 会話</title>
   <meta name="theme-color" content="#1e2a44">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -17,38 +17,38 @@
   <header class="topbar">
     <div class="brand"><span class="logo">会話</span><span class="name">Kaiwa</span></div>
     <div class="toolbar">
-      <span class="pill" id="ptsPill" title="Tes points">⭐ 0</span>
-      <button class="toggle" id="tgFuri" title="Afficher les furigana" aria-pressed="true">ふり</button>
-      <button class="toggle" id="tgRomaji" title="Afficher le rōmaji" aria-pressed="false">rō</button>
-      <button class="icon" id="btnSettings" title="Réglages">⚙</button>
+      <span class="pill" id="ptsPill" title="Tes points" data-i18n-title="tPoints">⭐ 0</span>
+      <button class="toggle" id="tgFuri" title="Afficher les furigana" data-i18n-title="tFuri" aria-pressed="true">ふり</button>
+      <button class="toggle" id="tgRomaji" title="Afficher le rōmaji" data-i18n-title="tRomaji" aria-pressed="false">rō</button>
+      <button class="icon" id="btnSettings" title="Réglages" data-i18n-title="tSettings">⚙</button>
     </div>
   </header>
 
   <nav class="tabs" id="tabs">
-    <button data-view="kana"><span class="ti">あ</span><span class="tl">Kana</span></button>
-    <button data-view="phrases"><span class="ti">💬</span><span class="tl">Phrases</span></button>
+    <button data-view="kana"><span class="ti">あ</span><span class="tl" data-i18n="tabKana">Kana</span></button>
+    <button data-view="phrases"><span class="ti">💬</span><span class="tl" data-i18n="tabPhrases">Phrases</span></button>
     <button data-view="chat" class="main-tab"><span class="ti">🌸</span><span class="tl">Sakura</span></button>
-    <button data-view="cards"><span class="ti">🃏</span><span class="tl">Cartes</span></button>
-    <button data-view="quiz"><span class="ti">🏆</span><span class="tl">Quiz</span></button>
+    <button data-view="cards"><span class="ti">🃏</span><span class="tl" data-i18n="tabCards">Cartes</span></button>
+    <button data-view="quiz"><span class="ti">🏆</span><span class="tl" data-i18n="tabQuiz">Quiz</span></button>
   </nav>
 
   <div class="views">
     <!-- Conversation -->
     <section class="view" id="view-chat">
       <div class="scenario-bar">
-        <label for="scenario">Thème :</label>
+        <label for="scenario" data-i18n="theme">Thème :</label>
         <select id="scenario"></select>
-        <button class="btn small" id="btnNew" title="Nouvelle conversation">＋ Nouvelle</button>
+        <button class="btn small" id="btnNew" title="Nouvelle conversation" data-i18n-title="tNew" data-i18n="newConv">＋ Nouvelle</button>
       </div>
-      <button class="fab-wotd" id="btnWotd" title="Mot du jour">
-        <span class="fab-ic" lang="ja">日</span><span class="fab-tl">Mot du jour</span><span class="dot" id="wotdDot"></span>
+      <button class="fab-wotd" id="btnWotd" title="Mot du jour" data-i18n-title="wotd">
+        <span class="fab-ic" lang="ja">日</span><span class="fab-tl" data-i18n="wotd">Mot du jour</span><span class="dot" id="wotdDot"></span>
       </button>
       <main id="chat" class="chat" aria-live="polite"></main>
       <div id="suggestions" class="suggestions"></div>
       <form id="composer" class="composer">
-        <button type="button" id="btnMic" class="mic" title="Parler (japonais)">🎤</button>
-        <textarea id="input" rows="1" placeholder="Écris en japonais (ou en français si tu bloques)…" lang="ja"></textarea>
-        <button type="submit" id="btnSend" class="send" title="Envoyer">➤</button>
+        <button type="button" id="btnMic" class="mic" title="Parler (japonais)" data-i18n-title="tMic">🎤</button>
+        <textarea id="input" rows="1" placeholder="Écris en japonais (ou en français si tu bloques)…" data-i18n-ph="inputPh" lang="ja"></textarea>
+        <button type="submit" id="btnSend" class="send" title="Envoyer" data-i18n-title="tSend">➤</button>
       </form>
     </section>
 
@@ -63,39 +63,60 @@
   </div>
 
   <dialog id="wotdDialog" class="wotd-dialog">
-    <button class="close-x" id="wotdClose" title="Fermer">✕</button>
+    <button class="close-x" id="wotdClose" title="Fermer" data-i18n-title="tClose">✕</button>
     <div id="view-jour" class="wotd-body"></div>
+  </dialog>
+
+  <!-- Choix de la langue (premier lancement) -->
+  <dialog id="langDialog" class="lang-dialog">
+    <div class="lang-box">
+      <div class="lang-logo">会話</div>
+      <h2>Kaiwa</h2>
+      <p>Choisis ta langue · Choose your language</p>
+      <div class="lang-choices">
+        <button class="lang-btn" data-lang="fr"><span class="flag">🇫🇷</span>Français</button>
+        <button class="lang-btn" data-lang="en"><span class="flag">🇬🇧</span>English</button>
+      </div>
+    </div>
   </dialog>
 
   <dialog id="settings">
     <form method="dialog" class="settings">
-      <h2>Réglages</h2>
-      <label>Intelligence artificielle
+      <h2 data-i18n="settings">Réglages</h2>
+      <label><span data-i18n="language">Langue</span>
+        <select id="langSelect">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </label>
+      <label><span data-i18n="ai">Intelligence artificielle</span>
         <select id="provider"></select>
       </label>
       <label><span id="keyLabel">Clé API</span>
         <input type="password" id="apiKey" autocomplete="off">
         <small id="keyHelp"></small>
-        <small>La clé reste uniquement sur cet appareil.</small>
+        <small data-i18n="keyLocal">La clé reste uniquement sur cet appareil.</small>
       </label>
-      <label id="modelRow">Modèle
+      <label id="modelRow"><span data-i18n="model">Modèle</span>
         <select id="model"></select>
       </label>
-      <label>Autre modèle (facultatif)
-        <input type="text" id="customModel" placeholder="identifiant exact du modèle" autocomplete="off">
+      <label><span data-i18n="otherModel">Autre modèle (facultatif)</span>
+        <input type="text" id="customModel" placeholder="identifiant exact du modèle" data-i18n-ph="otherModelPh" autocomplete="off">
       </label>
-      <label class="row"><input type="checkbox" id="autoSpeak"> Lire automatiquement les réponses</label>
-      <label class="row"><input type="checkbox" id="autoSend"> Envoyer automatiquement après la dictée</label>
-      <label>Vitesse de la voix : <span id="rateVal"></span>
+      <label class="row"><input type="checkbox" id="autoSpeak"> <span data-i18n="autoSpeak">Lire automatiquement les réponses</span></label>
+      <label class="row"><input type="checkbox" id="autoSend"> <span data-i18n="autoSend">Envoyer automatiquement après la dictée</span></label>
+      <label><span><span data-i18n="voiceRate">Vitesse de la voix :</span> <span id="rateVal"></span></span>
         <input type="range" id="rate" min="0.5" max="1.2" step="0.05">
       </label>
       <div class="actions">
-        <button value="close" class="btn">Fermer</button>
+        <button value="close" class="btn" data-i18n="close">Fermer</button>
       </div>
     </form>
   </dialog>
 
+  <script src="i18n.js"></script>
   <script src="content.js"></script>
+  <script src="content-en.js"></script>
   <script src="app.js"></script>
   <script src="learn.js"></script>
 </body>
