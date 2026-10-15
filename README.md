@@ -8,7 +8,7 @@ Application web pour pratiquer le japonais (niveau débutant N5-N4) : conversati
 - **Mot du jour** (bouton doré sur la page Sakura) — un mot par jour avec phrase d'exemple et audio, calendrier (✓ sur les jours appris, jours passés à rattraper), série de jours d'affilée. Pastille rouge tant que le mot du jour n'est pas appris
 - **Kana** — tableaux hiragana / katakana (base, dakuten, combinaisons), touche pour écouter
 - **Phrases** — 8 thèmes de phrases utiles avec audio, et bouton « Pratiquer avec Sakura »
-- **Cartes** — flashcards qui se retournent (kana, 7 catégories de vocabulaire, phrases), sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
+- **Cartes** — flashcards qui se retournent (kana, 13 catégories de vocabulaire, phrases), sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
 - **Particules** (dans Cartes) — 38 phrases à trous pour choisir la bonne particule (は・が・を, に・で・へ…, と・も・の・か…, ou tout mélangé), avec explication en français, audio, rōmaji et mémo des particules. +5 ⭐ par bonne réponse ; une erreur revient 3 phrases plus loin. Sur PC : touches 1-4 pour répondre, Entrée pour continuer
 - **Quiz** — 10 questions (hiragana, katakana ou vocabulaire). Points : 10 ⭐ par bonne réponse + bonus de série (jusqu'à +10), +50 ⭐ sans faute. Record par quiz, niveau tous les 200 ⭐
 - **Points ⭐** — affichés en haut de l'écran ; on en gagne aussi avec le mot du jour (+20 ⭐)
@@ -100,4 +100,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v6` → `kaiwa-v7` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v7` → `kaiwa-v8` dans `sw.js` pour forcer la mise à jour sur le téléphone.

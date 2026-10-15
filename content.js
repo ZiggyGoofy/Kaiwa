@@ -230,6 +230,76 @@ const VOCAB = {
       ["フランス{人|じん}", "furansujin", "Français(e)"],
     ],
   },
+  liaison: {
+    title: "Mots de conversation",
+    items: [
+      ["{本当|ほんとう}", "hontou", "vrai, vraiment"], ["たぶん", "tabun", "peut-être, probablement"],
+      ["もちろん", "mochiron", "bien sûr"], ["ちょっと", "chotto", "un peu"],
+      ["とても", "totemo", "très"], ["あまり", "amari", "pas très (+ négatif)"],
+      ["{全然|ぜんぜん}", "zenzen", "pas du tout (+ négatif)"], ["いつも", "itsumo", "toujours"],
+      ["ときどき", "tokidoki", "parfois"], ["よく", "yoku", "souvent"],
+      ["{一緒|いっしょ}に", "issho ni", "ensemble"], ["でも", "demo", "mais"],
+      ["だから", "dakara", "donc, c'est pourquoi"], ["それから", "sorekara", "ensuite, et puis"],
+    ],
+  },
+  questions: {
+    title: "Mots interrogatifs",
+    items: [
+      ["{何|なに}", "nani / nan", "quoi"], ["{誰|だれ}", "dare", "qui"],
+      ["どこ", "doko", "où"], ["いつ", "itsu", "quand"],
+      ["どうして", "doushite", "pourquoi"], ["どう", "dou", "comment"],
+      ["いくら", "ikura", "combien (prix)"], ["いくつ", "ikutsu", "combien (nombre) / quel âge"],
+      ["どれ", "dore", "lequel"], ["どんな", "donna", "quel genre de"],
+    ],
+  },
+  quotidien: {
+    title: "Vie quotidienne",
+    items: [
+      ["{電話|でんわ}", "denwa", "téléphone"], ["スマホ", "sumaho", "smartphone"],
+      ["パソコン", "pasokon", "ordinateur"], ["{料理|りょうり}", "ryouri", "cuisine (plats)"],
+      ["{買|か}い{物|もの}", "kaimono", "shopping, courses"], ["{散歩|さんぽ}", "sanpo", "promenade"],
+      ["{休|やす}み", "yasumi", "repos, congé, vacances"], ["{趣味|しゅみ}", "shumi", "loisir, passe-temps"],
+      ["{大学|だいがく}", "daigaku", "université"], ["{会社|かいしゃ}", "kaisha", "entreprise"],
+      ["{国|くに}", "kuni", "pays"], ["{病気|びょうき}", "byouki", "maladie, malade"],
+      ["お{腹|なか}", "onaka", "ventre"], ["お{風呂|ふろ}", "ofuro", "bain"],
+    ],
+  },
+  verbes2: {
+    title: "Verbes (2)",
+    items: [
+      ["する", "suru", "faire"], ["ある", "aru", "il y a, avoir (objets)"],
+      ["いる", "iru", "il y a, être là (êtres vivants)"], ["{会|あ}う", "au", "rencontrer, voir quelqu'un"],
+      ["{思|おも}う", "omou", "penser"], ["{知|し}る", "shiru", "connaître, apprendre"],
+      ["{使|つか}う", "tsukau", "utiliser"], ["{働|はたら}く", "hataraku", "travailler"],
+      ["{休|やす}む", "yasumu", "se reposer, s'absenter"], ["{始|はじ}まる", "hajimaru", "commencer"],
+      ["{終|お}わる", "owaru", "finir, se terminer"], ["{出|で}かける", "dekakeru", "sortir"],
+      ["{手伝|てつだ}う", "tetsudau", "aider"], ["{忘|わす}れる", "wasureru", "oublier"],
+    ],
+  },
+  adjectifs2: {
+    title: "Adjectifs (2)",
+    items: [
+      ["いい", "ii", "bien, bon"], ["{悪|わる}い", "warui", "mauvais"],
+      ["{早|はや}い", "hayai", "tôt"], ["{遅|おそ}い", "osoi", "tard, lent"],
+      ["{近|ちか}い", "chikai", "proche"], ["{遠|とお}い", "tooi", "loin"],
+      ["{多|おお}い", "ooi", "nombreux"], ["{少|すく}ない", "sukunai", "peu nombreux"],
+      ["{面白|おもしろ}い", "omoshiroi", "intéressant, drôle"], ["つまらない", "tsumaranai", "ennuyeux"],
+      ["{可愛|かわい}い", "kawaii", "mignon"], ["かっこいい", "kakkoii", "cool, stylé"],
+      ["きれい", "kirei", "joli, propre"], ["{大変|たいへん}", "taihen", "dur, pénible"],
+      ["{便利|べんり}", "benri", "pratique"],
+    ],
+  },
+  reactions: {
+    title: "Réactions",
+    items: [
+      ["そうですね", "sou desu ne", "c'est vrai / voyons…"], ["なるほど", "naruhodo", "je vois"],
+      ["すごい", "sugoi", "génial, incroyable"], ["よかった", "yokatta", "tant mieux, ouf"],
+      ["{残念|ざんねん}", "zannen", "dommage"], ["おめでとう", "omedetou", "félicitations"],
+      ["お{疲|つか}れ{様|さま}", "otsukaresama", "bon travail, merci pour tes efforts"], ["いただきます", "itadakimasu", "bon appétit (avant de manger)"],
+      ["ごちそうさま", "gochisousama", "merci pour le repas (après)"], ["おやすみ", "oyasumi", "bonne nuit"],
+      ["{気|き}をつけて", "ki o tsukete", "fais attention, prends soin de toi"], ["ええと", "eeto", "euh… (pour réfléchir)"],
+    ],
+  },
 };
 
 // ---------- Mots du jour (calendrier) ----------

@@ -47,7 +47,7 @@ DECKS["kana:kata"] = { group: "Kana", title: "Katakana", icon: "ア", items: () 
 const particleItems = (k) => PARTICLES[k].items.map(([ja, answer, wrong, romaji, fr, why], i) => ({ id: k + i, ja, answer, wrong: wrong.split("|"), romaji, fr, why }));
 for (const k in PARTICLES) DECKS["part:" + k] = { group: "Particules", kind: "particle", title: PARTICLES[k].title, icon: PARTICLES[k].icon, items: () => particleItems(k) };
 DECKS["part:mix"] = { group: "Particules", kind: "particle", title: L("Tout mélangé", "All mixed"), icon: "🔀", items: () => Object.keys(PARTICLES).flatMap(particleItems) };
-const VOCAB_ICONS = { nombres: "一", temps: "日", nourriture: "食", lieux: "駅", verbes: "行", adjectifs: "大", personnes: "人" };
+const VOCAB_ICONS = { nombres: "一", temps: "日", nourriture: "食", lieux: "駅", verbes: "行", adjectifs: "大", personnes: "人", liaison: "話", questions: "何", quotidien: "生", verbes2: "会", adjectifs2: "好", reactions: "笑" };
 const PHRASE_ICONS = { essentiels: "👋", presentation: "🙋", cafe: "☕", courses: "🛍️", chemin: "🧭", loisirs: "🎮", journee: "🌅", voyage: "✈️" };
 for (const k in VOCAB) DECKS["vocab:" + k] = { group: "Vocabulaire", title: VOCAB[k].title, icon: VOCAB_ICONS[k] || "語", items: () => listItems(VOCAB, k) };
 DECKS["cal:mots"] = {

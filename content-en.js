@@ -67,6 +67,39 @@ const CONTENT_EN = {
       "I / me", "friend", "family", "teacher", "student", "my mother",
       "my father", "person", "child", "Japanese (person)", "French (person)",
     ]],
+    liaison: ["Conversation words", [
+      "true, really", "maybe, probably", "of course", "a little",
+      "very", "not very (+ negative)", "not at all (+ negative)", "always",
+      "sometimes", "often", "together", "but",
+      "so, that's why", "and then, after that",
+    ]],
+    questions: ["Question words", [
+      "what", "who", "where", "when", "why", "how",
+      "how much (price)", "how many / how old", "which one", "what kind of",
+    ]],
+    quotidien: ["Daily life", [
+      "telephone", "smartphone", "computer", "cooking, dishes",
+      "shopping", "walk, stroll", "rest, day off, holidays", "hobby, pastime",
+      "university", "company", "country", "illness, sick",
+      "stomach, belly", "bath",
+    ]],
+    verbes2: ["Verbs (2)", [
+      "to do", "there is, to have (things)", "there is, to be (living beings)", "to meet, to see someone",
+      "to think", "to know, to find out", "to use", "to work",
+      "to rest, to take a day off", "to begin", "to end, to finish", "to go out",
+      "to help", "to forget",
+    ]],
+    adjectifs2: ["Adjectives (2)", [
+      "good, fine", "bad", "early", "late, slow",
+      "near", "far", "many, a lot", "few",
+      "interesting, funny", "boring", "cute", "cool, stylish",
+      "pretty, clean", "tough, hard", "convenient",
+    ]],
+    reactions: ["Reactions", [
+      "that's right / let me see…", "I see", "amazing, awesome", "good, phew",
+      "too bad", "congratulations", "good job, thanks for your hard work", "let's eat (before a meal)",
+      "thanks for the meal (after)", "good night", "take care, be careful", "um… (while thinking)",
+    ]],
   },
 
   // [meaning, translation of the example sentence]
