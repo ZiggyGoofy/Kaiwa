@@ -181,7 +181,7 @@ renderers.kana = function () {
     c ? `<button class="kana" data-k="${kanaOf(c[0], set)}"><b lang="ja">${kanaOf(c[0], set)}</b><small>${c[1]}</small></button>` : `<span class="kana empty"></span>`
   ).join("") + "</div>";
   v.innerHTML = `
-    <div class="panel-title"><h2>Kana</h2><p>${L("Touche un caractère pour l'écouter.", "Tap a character to hear it.")}</p></div>
+    <div class="panel-title"><h2>Kana</h2><p>${L("Touche un caractère pour voir sa fiche : prononciation, mot d'exemple et traduction.", "Tap a character to open its card: pronunciation, example word and translation.")}</p></div>
     <div class="seg">
       <button data-set="hira" class="${set === "hira" ? "on" : ""}">ひらがな Hiragana</button>
       <button data-set="kata" class="${set === "kata" ? "on" : ""}">カタカナ Katakana</button>
@@ -194,10 +194,71 @@ renderers.kana = function () {
       <button class="btn" id="kanaQuiz">🏆 ${L("Faire le quiz", "Take the quiz")}</button>
     </div>`;
   v.querySelectorAll(".seg button").forEach((b) => (b.onclick = () => { learn.kanaSet = b.dataset.set; saveLearn(); renderers.kana(); }));
-  v.querySelectorAll("button.kana").forEach((b) => (b.onclick = () => { speak(b.dataset.k); pop(b); }));
+  v.querySelectorAll("button.kana").forEach((b) => (b.onclick = () => { pop(b); openKana(b.dataset.k); }));
   $("kanaCards").onclick = () => { showView("cards"); openDeck("kana:" + set); };
   $("kanaQuiz").onclick = () => { showView("quiz"); startQuiz(set); };
 };
+
+// ---------- Fiche d'un kana (style Renshuu) ----------
+let kanaList = [], kanaPos = 0;
+function openKana(ch) {
+  const set = learn.kanaSet;
+  kanaList = [...KANA_ROWS, ...KANA_DAKUTEN, ...KANA_COMBO].flat().filter(Boolean).map(([k, r]) => [kanaOf(k, set), r]);
+  kanaPos = Math.max(0, kanaList.findIndex(([k]) => k === ch));
+  renderKanaDetail(true);
+  if (!$("kanaDialog").open) $("kanaDialog").showModal();
+}
+// [と]もだち → と en surbrillance
+const hl = (s) => esc(s).replace(/\[(.+?)\]/g, '<b class="hl">$1</b>');
+const unbracket = (s) => s.replace(/[\[\]]/g, "");
+function renderKanaDetail(sayIt) {
+  const [ch, rom] = kanaList[kanaPos], ex = KANA_EX[ch];
+  const script = learn.kanaSet === "kata" ? "katakana" : "hiragana";
+  const word = ex ? unbracket(ex[0]) : "";
+  $("kanaDetail").innerHTML = `
+    <div class="kd-head"><b>${esc(rom)}</b> <span>(${script})</span></div>
+    <div class="kd-main">
+      <button class="kd-nav" id="kdPrev" ${kanaPos === 0 ? "disabled" : ""} title="${L("Précédent", "Previous")}">‹</button>
+      <button class="kd-char" id="kdChar" lang="ja" title="${L("Écouter", "Listen")}">${esc(ch)}</button>
+      <button class="kd-nav" id="kdNext" ${kanaPos === kanaList.length - 1 ? "disabled" : ""} title="${L("Suivant", "Next")}">›</button>
+    </div>
+    ${ex ? `
+    <div class="kd-example">
+      <div class="kd-word">
+        <div class="kd-rom">(${hl(ex[1])})</div>
+        <div class="kd-kana" lang="ja"><span class="kd-w">${hl(ex[0])}</span><button class="kd-say" id="kdSayWord" title="${L("Écouter le mot", "Listen to the word")}">🔊</button></div>
+        ${ex[2] ? `<div class="kd-kanji" lang="ja">${esc(ex[2])}</div>` : ""}
+      </div>
+      <button class="kd-pic" id="kdPic" title="${L("Écouter le mot", "Listen to the word")}">${ex[5]}<span class="kd-say-small">🔊</span></button>
+      <div class="kd-tr">${esc(L(ex[3], ex[4]))}</div>
+    </div>` : `<p class="kd-none">${L("Ce kana est très rare : pas de mot courant à montrer.", "This kana is very rare: no common word to show.")}</p>`}
+    <div class="kd-count">${kanaPos + 1} / ${kanaList.length}</div>`;
+  $("kdChar").onclick = () => { speak(ch); pop($("kdChar")); };
+  if (ex) {
+    $("kdSayWord").onclick = () => speak(word);
+    $("kdPic").onclick = () => { speak(word); pop($("kdPic")); };
+  }
+  $("kdPrev").onclick = () => { if (kanaPos > 0) { kanaPos--; renderKanaDetail(true); } };
+  $("kdNext").onclick = () => { if (kanaPos < kanaList.length - 1) { kanaPos++; renderKanaDetail(true); } };
+  if (sayIt) speak(ch);
+}
+$("kanaClose").onclick = () => $("kanaDialog").close();
+$("kanaDialog").addEventListener("click", (e) => { if (e.target === $("kanaDialog")) $("kanaDialog").close(); });
+document.addEventListener("keydown", (e) => {
+  if (!$("kanaDialog").open) return;
+  if (e.key === "ArrowLeft") $("kdPrev").click();
+  if (e.key === "ArrowRight") $("kdNext").click();
+});
+// balayage gauche / droite sur téléphone
+(() => {
+  let x0 = null;
+  $("kanaDialog").addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  $("kanaDialog").addEventListener("touchend", (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) > 50) (dx < 0 ? $("kdNext") : $("kdPrev")).click();
+  });
+})();
 
 // ---------- Phrases ----------
 let phraseTheme = "essentiels";

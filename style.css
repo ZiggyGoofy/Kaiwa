@@ -364,6 +364,51 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .lang-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #0f2a6b; }
 .lang-btn .flag { font-size: 1.8rem; }
 
+/* ============ Fiche d'un kana ============ */
+.kana-dialog { width: min(520px, calc(100vw - 24px)); padding: 0; border-radius: 22px; background: #4a4a4a; color: #fff; overflow: hidden; }
+.kana-dialog[open] { animation: popin .25s cubic-bezier(.3,1.4,.5,1); }
+.kana-dialog::backdrop { background: rgba(5,10,30,.7); }
+#kanaDetail { padding: 18px 16px 12px; text-align: center; user-select: none; }
+.kd-head { font-size: 1.4rem; color: #bbb; }
+.kd-head b { color: #fff; font-weight: 600; }
+.kd-main { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.kd-char {
+  background: none; border: none; color: #fff; line-height: 1; padding: 0 6px;
+  font-size: clamp(7rem, 34vw, 10rem); font-weight: 400;
+  text-shadow: 0 0 6px rgba(255,255,255,.35), 0 0 18px rgba(255,255,255,.15);
+  font-family: "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", "Yu Gothic", system-ui, sans-serif;
+}
+.kd-char:has(+ *) { min-width: 1.2em; }
+.kd-nav {
+  width: 44px; height: 44px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3);
+  background: rgba(255,255,255,.08); color: #fff; font-size: 1.6rem; line-height: 1; flex-shrink: 0;
+}
+.kd-nav:disabled { opacity: .2; }
+.kd-example { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; margin-top: 8px; }
+.kd-word { text-align: center; }
+.kd-rom { color: #eee; font-size: 1.05rem; }
+.kd-kana { font-size: 1.35rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+.kd-w { white-space: nowrap; }
+@media (max-width: 520px) {
+  .kd-example { grid-template-columns: 1fr 1fr; grid-template-areas: "word word" "pic tr"; row-gap: 4px; }
+  .kd-word { grid-area: word; }
+  .kd-pic { grid-area: pic; justify-self: end; margin-right: 8px; }
+  .kd-tr { grid-area: tr; justify-self: start; text-align: left; }
+  .kd-kana { font-size: 1.6rem; }
+}
+.kd-kanji { color: #bbb; font-size: 1rem; margin-top: 2px; }
+.hl { color: #5ad35a; font-weight: 800; }
+.kd-say { background: none; border: none; font-size: 1.2rem; padding: 0 2px; filter: hue-rotate(300deg) saturate(1.5); }
+.kd-pic {
+  background: none; border: none; font-size: 4.2rem; line-height: 1; display: flex; flex-direction: column; align-items: center;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.3));
+}
+.kd-say-small { font-size: 1.1rem; margin-top: 4px; filter: hue-rotate(300deg) saturate(1.5); }
+.kd-tr { font-size: 1.15rem; color: #fff; }
+.kd-none { color: #ccc; margin: 18px 0; }
+.kd-count { color: #999; font-size: .8rem; margin-top: 10px; }
+.kana-dialog .close-x { z-index: 3; }
+
 /* =====================================================
    MOBILE — interface « menu de jeu »
    barre d'onglets en bas, boutons en relief, titres épais
@@ -559,4 +604,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 
   .lang-dialog { border: 3px solid #0f2a6b; box-shadow: 0 6px 0 #08132f; }
   .lang-box h2, .lang-btn { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
+
+  .kana-dialog { border: 3px solid #0f2a6b; box-shadow: 0 6px 0 #08132f; }
+  .kd-head b, .kd-tr { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
 }
