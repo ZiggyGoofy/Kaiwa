@@ -409,6 +409,46 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .kd-count { color: #999; font-size: .8rem; margin-top: 10px; }
 .kana-dialog .close-x { z-index: 3; }
 
+/* Mot d'exemple au dos des cartes de kana */
+.card-ex {
+  display: flex; align-items: center; gap: 12px; margin-top: 6px; padding: 10px 14px;
+  background: rgba(0,0,0,.05); border-radius: 14px; text-align: left; max-width: 100%;
+}
+.card-ex-pic { font-size: 2.6rem; line-height: 1; }
+.card-ex-kana { font-size: 1.4rem; font-weight: 700; white-space: nowrap; }
+.card-ex-kana small { font-size: .8rem; font-weight: 500; color: var(--muted); }
+.card-ex-rom { color: var(--muted); font-size: .95rem; }
+.card-ex .hl { color: #1f9d3a; }
+
+/* ============ Brute force (kana) ============ */
+.bf-quick { display: flex; gap: 8px; margin: 12px 0 0; flex-wrap: wrap; }
+.bf-rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 8px; }
+.bf-row {
+  position: relative; padding: 10px 0 6px; border-radius: 12px; font-size: 1.5rem; font-weight: 700;
+  background: var(--panel); border: 2px solid var(--border); color: var(--muted); opacity: .55;
+  display: flex; flex-direction: column; align-items: center; line-height: 1.1;
+}
+.bf-row small { font-size: .65rem; font-weight: 600; opacity: .8; }
+.bf-row.on { opacity: 1; color: var(--ink); border-color: var(--b-green); background: color-mix(in srgb, var(--b-green) 14%, var(--panel)); }
+.bf-opt { display: flex; gap: 8px; align-items: center; margin: 16px 2px 0; font-size: .95rem; }
+.bf-help { margin-top: 4px; }
+.bf-mode { border-style: dashed; }
+.bf-card { background: var(--panel); border: 2px solid var(--border); border-radius: 20px; padding: 18px 14px 14px; text-align: center; margin-top: 14px; }
+.bf-kana { font-size: clamp(5rem, 26vw, 7.5rem); line-height: 1.15; min-height: 1.15em; transition: color .15s; }
+.bf-kana.good { color: var(--b-green-d); animation: pop .25s; }
+.bf-kana.bad { color: var(--b-red-d); animation: shake .3s; }
+.bf-feedback { min-height: 1.6em; font-size: 1.15rem; margin: 2px 0 8px; }
+.bf-good { color: var(--b-green-d); font-weight: 800; }
+.bf-bad { color: var(--b-red-d); font-weight: 600; }
+.bf-input {
+  width: min(220px, 80%); text-align: center; font-size: 1.5rem; padding: 10px 12px; border-radius: 14px;
+  border: 2px solid var(--border); background: var(--bg); color: var(--ink); font-family: inherit;
+}
+.bf-input:focus { outline: none; border-color: var(--b-blue); }
+.bf-input.bad { border-color: var(--b-red); }
+.bf-tools { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.bf-nums { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-top: 6px; }
+
 /* =====================================================
    MOBILE — interface « menu de jeu »
    barre d'onglets en bas, boutons en relief, titres épais
@@ -607,4 +647,13 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 
   .kana-dialog { border: 3px solid #0f2a6b; box-shadow: 0 6px 0 #08132f; }
   .kd-head b, .kd-tr { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
+
+  .bf-row { border: 2px solid #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; background: #d7d2ee; opacity: .7; }
+  .bf-row.on { background: linear-gradient(180deg, #8bf08f, #3fbf4f); color: #fff; text-shadow: 0 1px 0 #23862f; opacity: 1; border-color: #0f2a6b; }
+  .bf-mode { border: 2px dashed #0f2a6b; background: linear-gradient(90deg, #fff6dc, #ffe7a8); }
+  .bf-card { border: 2px solid #0f2a6b; box-shadow: 0 6px 0 #0f2a6b; background: linear-gradient(180deg, #ffffff, #ece8ff); border-radius: 22px; }
+  .bf-input { border-color: #0f2a6b; background: #fff; font-weight: 800; }
+  .bf-nums { color: #c8d4ff; }
+  .bf-nums .qpts { color: #ffe07a; }
+  .bf-opt { color: #dbe3ff; }
 }

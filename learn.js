@@ -323,18 +323,31 @@ function openDeck(id, all = false) {
   renderCard();
 }
 
+// Mot d'exemple d'un kana, affiché au dos de sa carte (comme dans la fiche du kana)
+function kanaExample(ch) {
+  const ex = KANA_EX[ch];
+  if (!ex) return "";
+  return `<div class="card-ex">
+    <span class="card-ex-pic">${ex[5]}</span>
+    <div>
+      <div class="card-ex-kana" lang="ja">${hl(ex[0])}${ex[2] ? ` <small lang="ja">${esc(ex[2])}</small>` : ""}</div>
+      <div class="card-ex-rom">${hl(ex[1])} · ${esc(L(ex[3], ex[4]))}</div>
+    </div>
+  </div>`;
+}
+
 function cardFaces(it) {
   const jaSide = `<div class="big-ja" lang="ja">${toRuby(it.ja)}</div>`;
   const kana = !it.fr;
   if (learn.dir === "ja") {
     return {
       front: jaSide,
-      back: kana ? `<div class="big-ja">${esc(it.romaji)}</div>` : `${jaSide}<div class="romaji">${esc(it.romaji)}</div><div class="big-fr">${esc(it.fr)}</div>`,
+      back: kana ? `<div class="big-ja">${esc(it.romaji)}</div>${kanaExample(it.ja)}` : `${jaSide}<div class="romaji">${esc(it.romaji)}</div><div class="big-fr">${esc(it.fr)}</div>`,
     };
   }
   return {
     front: `<div class="big-fr">${esc(kana ? it.romaji : it.fr)}</div>`,
-    back: `${jaSide}${kana ? "" : `<div class="romaji">${esc(it.romaji)}</div>`}`,
+    back: `${jaSide}${kana ? kanaExample(it.ja) : `<div class="romaji">${esc(it.romaji)}</div>`}`,
   };
 }
 
@@ -373,10 +386,14 @@ function renderCard() {
         <button class="btn green" id="cardKnow">😊 ${L("Je savais", "I knew it")}</button>
       </div>
     </div>`;
-  const flip = () => { if (s.flipped) return; s.flipped = true; renderCard(); speak(toPlain(it.ja)); };
+  const flip = () => {
+    if (s.flipped) return; s.flipped = true; renderCard();
+    const ex = !it.fr && KANA_EX[it.ja];
+    speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja));
+  };
   $("flip").onclick = flip;
   $("flip").onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
-  $("cardSay").onclick = (e) => { e.stopPropagation(); speak(toPlain(it.ja)); };
+  $("cardSay").onclick = (e) => { e.stopPropagation(); const ex = !it.fr && KANA_EX[it.ja]; speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja)); };
   $("cardAgainOne").onclick = () => { s.queue.shift(); s.queue.splice(Math.min(3, s.queue.length), 0, it); s.flipped = false; renderCard(); };
   $("cardKnow").onclick = () => {
     const k = knownSet(s.deck); k.add(it.id); learn.known[s.deck] = [...k]; saveLearn();
@@ -503,8 +520,14 @@ function renderQuizHome() {
         <span class="deck-icon" lang="ja">${m.icon}</span>
         <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}</span></span>
         <span class="best">${learn.best[k] != null ? `${stars(learn.best[k])}<br><small>${L("Record :", "Best:")} ${learn.bestPts[k] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
-      </button>`).join("")}</div>`;
-  document.querySelectorAll(".mode").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
+      </button>`).join("")}
+      <button class="mode bf-mode" id="bfOpen">
+        <span class="deck-icon">⌨️</span>
+        <span><span class="deck-title">Brute force (kana)</span><span class="muted">${L("Tape la lecture de chaque kana · choisis lesquels", "Type each kana's reading · pick which ones")}</span></span>
+        <span class="best">${L("Entraînement", "Training")}</span>
+      </button></div>`;
+  document.querySelectorAll(".mode[data-k]").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
+  $("bfOpen").onclick = () => openBruteForce();
 }
 
 function stars(score) {
