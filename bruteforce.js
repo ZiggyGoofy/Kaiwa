@@ -161,16 +161,28 @@ function bfCheck() {
 }
 
 function updateBFStats() {
-  const s = bf, alive = s.items.filter((it) => it.left > 0).length;
-  const doneCount = s.items.length - alive, pct = Math.round((doneCount / s.items.length) * 100);
+  const s = bf, n = s.items.length, alive = s.items.filter((it) => it.left > 0).length;
+  // la barre avance à chaque bonne réponse (et recule un peu après une erreur)
+  const goal = n * BF_TARGET, got = s.items.reduce((a, it) => a + (BF_TARGET - it.left), 0);
+  const pct = s.endless ? 100 : Math.round((got / goal) * 100);
   $("bfStats").innerHTML = `
-    <div class="bar big"><i style="width:${pct}%"></i></div>
+    <div class="bf-progress">
+      <div class="bar big"><i style="width:${pct}%"></i></div>
+      <b>${pct} %</b>
+    </div>
     <div class="bf-nums">
-      <span>${s.endless ? L("Révision libre", "Free review") : L(`${alive} kana à éliminer`, `${alive} kana left to eliminate`)}</span>
+      <span>${s.endless ? L("Révision libre", "Free review") : `✅ ${n - alive}/${n} ${L("éliminés", "done")}`}</span>
       <span>🔥 ${s.streak}</span>
-      <span>✓ ${s.correct} / ${s.total}${s.total ? ` (${Math.round((s.correct / s.total) * 100)} %)` : ""}</span>
+      <span>🎯 ${s.total ? Math.round((s.correct / s.total) * 100) : 0} %</span>
       <span class="qpts">⭐ ${s.pts}</span>
     </div>`;
+  // progression du kana affiché : ●●○ = encore 1 réussite pour l'éliminer
+  const it = s.current;
+  if (it && $("bfDots")) {
+    const done = BF_TARGET - it.left;
+    $("bfDots").innerHTML = s.endless ? "" : Array.from({ length: BF_TARGET }, (_, i) => `<i class="${i < done ? "on" : ""}"></i>`).join("");
+    $("bfDots").title = L(`${done} / ${BF_TARGET} réussites pour ce kana`, `${done} / ${BF_TARGET} correct for this kana`);
+  }
 }
 
 function renderBFPractice() {
@@ -182,6 +194,7 @@ function renderBFPractice() {
     </div>
     <div id="bfStats"></div>
     <div class="bf-card">
+      <div class="bf-dots" id="bfDots"></div>
       <div class="bf-kana" id="bfKana" lang="ja"></div>
       <div class="bf-feedback" id="bfFeedback">&nbsp;</div>
       <input id="bfInput" class="bf-input" type="text" inputmode="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="rōmaji" aria-label="rōmaji">
