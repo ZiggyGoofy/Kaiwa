@@ -479,5 +479,11 @@ if (state.messages.at(-1)?.role === "user") state.messages.pop();
 render();
 
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-  navigator.serviceWorker.register("sw.js").catch(() => {});
+  // updateViaCache "none" : le navigateur revérifie sw.js à chaque ouverture
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then((reg) => reg.update()).catch(() => {});
+  // quand une nouvelle version prend le relais, on recharge une fois pour l'afficher
+  if (navigator.serviceWorker.controller) {
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (!reloaded) { reloaded = true; location.reload(); } });
+  }
 }

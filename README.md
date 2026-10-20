@@ -103,4 +103,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v11` → `kaiwa-v12` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v12` → `kaiwa-v13` dans `sw.js` pour forcer la mise à jour sur le téléphone.
