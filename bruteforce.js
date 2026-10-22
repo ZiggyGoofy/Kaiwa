@@ -52,7 +52,7 @@ function renderBFSetup() {
       <button class="btn small" data-q="none">${L("Aucun", "None")}</button>
     </div>
     <h3 class="sec">${L("De base", "Basic")}</h3><div class="bf-rows">${chips("base")}</div>
-    <h3 class="sec">${L("Avec ゛ et ゜ (dakuten)", "With ゛ and ゜ (dakuten)")}</h3><div class="bf-rows">${chips("dakuten")}</div>
+    <h3 class="sec">${L("Avec dakuten (が, ぱ…)", "With dakuten (が, ぱ…)")}</h3><div class="bf-rows">${chips("dakuten")}</div>
     <h3 class="sec">${L("Combinaisons", "Combinations")}</h3><div class="bf-rows">${chips("combo")}</div>
     <label class="bf-opt"><input type="checkbox" id="bfShow" ${p.showAnswer ? "checked" : ""}> ${L("Montrer la bonne réponse quand je me trompe", "Show the right answer when I'm wrong")}</label>
     <div class="cta-row">

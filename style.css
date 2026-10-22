@@ -430,6 +430,8 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 }
 .bf-row small { font-size: .65rem; font-weight: 600; opacity: .8; }
 .bf-row.on { opacity: 1; color: var(--ink); border-color: var(--b-green); background: color-mix(in srgb, var(--b-green) 14%, var(--panel)); }
+.bf-row.mastered small { color: var(--b-gold-d); opacity: 1; }
+.row-preview { font-size: 1.15rem; letter-spacing: 2px; text-align: center; margin: 16px 0 0; color: var(--muted); line-height: 1.6; }
 .bf-opt { display: flex; gap: 8px; align-items: center; margin: 16px 2px 0; font-size: .95rem; }
 .bf-help { margin-top: 4px; }
 .bf-mode { border-style: dashed; }
@@ -665,4 +667,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   .bf-progress b { color: #fff; text-shadow: 0 2px 0 #0a1433; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; }
   .bf-dots i { background: #c9c3e6; border: 1px solid #0f2a6b; }
   .bf-dots i.on { background: #3fbf4f; }
+
+  .bf-row.mastered small { color: #ffe07a; text-shadow: 0 1px 0 #8a5a00; }
+  .row-preview { color: #dbe3ff; }
 }

@@ -187,7 +187,7 @@ renderers.kana = function () {
       <button data-set="kata" class="${set === "kata" ? "on" : ""}">カタカナ Katakana</button>
     </div>
     <h3 class="sec">${L("De base", "Basic")}</h3>${grid(KANA_ROWS, 5)}
-    <h3 class="sec">${L("Avec ゛ et ゜ (dakuten)", "With ゛ and ゜ (dakuten)")}</h3>${grid(KANA_DAKUTEN, 5)}
+    <h3 class="sec">${L("Avec dakuten (が, ぱ…)", "With dakuten (が, ぱ…)")}</h3>${grid(KANA_DAKUTEN, 5)}
     <h3 class="sec">${L("Combinaisons", "Combinations")}</h3>${grid(KANA_COMBO, 3)}
     <div class="cta-row">
       <button class="btn gold" id="kanaCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
@@ -314,13 +314,80 @@ function renderDecks() {
   v.querySelectorAll(".deck").forEach((b) => (b.onclick = () => openDeck(b.dataset.id)));
 }
 
-function openDeck(id, all = false) {
-  const items = DECKS[id].items(), known = knownSet(id);
+// Lignes du tableau des kana (mêmes identifiants que le Brute force)
+const KANA_ROW_DEFS = [
+  ...KANA_ROWS.map((r, i) => ({ id: "b" + i, group: "base", kana: r.filter(Boolean).map((c) => c[0]) })),
+  ...KANA_DAKUTEN.map((r, i) => ({ id: "d" + i, group: "dakuten", kana: r.filter(Boolean).map((c) => c[0]) })),
+  ...KANA_COMBO.map((r, i) => ({ id: "c" + i, group: "combo", kana: r.filter(Boolean).map((c) => c[0]) })),
+];
+const isKanaDeck = (id) => id.startsWith("kana:");
+const cardRowsPref = (id) => ((learn.cardRows ||= {})[id] ||= KANA_ROW_DEFS.filter((r) => r.group === "base").map((r) => r.id));
+
+function openDeck(id, all = false, rows = null) {
+  // Kana : on choisit d'abord les lignes du tableau à réviser
+  if (isKanaDeck(id) && !rows) return renderKanaRowPicker(id);
+  let items = DECKS[id].items();
+  if (rows) {
+    const keep = new Set(KANA_ROW_DEFS.filter((r) => rows.includes(r.id)).flatMap((r) => r.kana));
+    items = items.filter((it) => keep.has(it.id));
+  }
+  const known = knownSet(id);
   let queue = items.filter((it) => !known.has(it.id));
   const review = all || !queue.length;
   if (review) queue = items;
-  session = { deck: id, items, queue: shuffle(queue), flipped: false, review };
+  session = { deck: id, items, rows, queue: shuffle(queue), flipped: false, review };
   renderCard();
+}
+
+function renderKanaRowPicker(id) {
+  session = null;
+  const v = $("view-cards"), d = DECKS[id], sel = new Set(cardRowsPref(id)), known = knownSet(id);
+  const script = id === "kana:kata" ? "kata" : "hira";
+  const chips = (group) => KANA_ROW_DEFS.filter((r) => r.group === group).map((r) => {
+    const k = r.kana.filter((x) => known.has(x)).length, full = k === r.kana.length;
+    return `<button class="bf-row ${sel.has(r.id) ? "on" : ""} ${full ? "mastered" : ""}" data-id="${r.id}" lang="ja"
+      title="${esc(r.kana.map((x) => kanaOf(x, script)).join(" "))}">${esc(kanaOf(r.kana[0], script))}<small>${full ? "★" : `${k}/${r.kana.length}`}</small></button>`;
+  }).join("");
+  const chosen = KANA_ROW_DEFS.filter((r) => sel.has(r.id)).flatMap((r) => r.kana);
+  const left = chosen.filter((x) => !known.has(x)).length;
+  const preview = chosen.slice(0, 30).map((x) => kanaOf(x, script)).join(" ") + (chosen.length > 30 ? " …" : "");
+  v.innerHTML = `
+    <div class="deck-head">
+      <button class="btn small" id="cardBack">← ${L("Paquets", "Decks")}</button>
+      <div><strong>${esc(d.title)}</strong><div class="muted">${L("Choisis les lignes à réviser", "Pick the rows to review")}</div></div>
+    </div>
+    <div class="bf-quick">
+      <button class="btn small" data-q="base">${L("De base", "Basic")}</button>
+      <button class="btn small" data-q="todo">${L("Pas encore maîtrisées", "Not mastered yet")}</button>
+      <button class="btn small" data-q="all">${L("Tout", "All")}</button>
+      <button class="btn small" data-q="none">${L("Aucune", "None")}</button>
+    </div>
+    <h3 class="sec">${L("De base", "Basic")}</h3><div class="bf-rows">${chips("base")}</div>
+    <h3 class="sec">${L("Avec dakuten (が, ぱ…)", "With dakuten (が, ぱ…)")}</h3><div class="bf-rows">${chips("dakuten")}</div>
+    <h3 class="sec">${L("Combinaisons", "Combinations")}</h3><div class="bf-rows">${chips("combo")}</div>
+    <p class="row-preview" lang="ja">${chosen.length ? esc(preview) : L("Aucune ligne choisie", "No row selected")}</p>
+    <div class="cta-row">
+      <button class="btn gold" id="rowStart" ${chosen.length ? "" : "disabled"}>🃏 ${left
+        ? L(`Réviser (${left} carte${left > 1 ? "s" : ""} à apprendre)`, `Review (${left} card${left > 1 ? "s" : ""} to learn)`)
+        : L(`Tout revoir (${chosen.length} cartes)`, `Review all (${chosen.length} cards)`)}</button>
+      ${left && left < chosen.length ? `<button class="btn" id="rowAll">${L(`Tout revoir (${chosen.length})`, `Review all (${chosen.length})`)}</button>` : ""}
+    </div>
+    <p class="cal-help">${L("Le chiffre sous chaque ligne = kana maîtrisés / total. ★ = ligne maîtrisée.", "The number under each row = mastered kana / total. ★ = row mastered.")}</p>`;
+  const set = (rows) => { learn.cardRows[id] = rows; saveLearn(); renderKanaRowPicker(id); };
+  v.querySelectorAll(".bf-row").forEach((b) => (b.onclick = () => {
+    const r = b.dataset.id, cur = cardRowsPref(id);
+    set(cur.includes(r) ? cur.filter((x) => x !== r) : [...cur, r]);
+  }));
+  v.querySelectorAll(".bf-quick button").forEach((b) => (b.onclick = () => {
+    const q = b.dataset.q;
+    set(q === "all" ? KANA_ROW_DEFS.map((r) => r.id)
+      : q === "base" ? KANA_ROW_DEFS.filter((r) => r.group === "base").map((r) => r.id)
+      : q === "todo" ? KANA_ROW_DEFS.filter((r) => r.kana.some((x) => !known.has(x))).map((r) => r.id)
+      : []);
+  }));
+  $("cardBack").onclick = closeDeck;
+  $("rowStart").onclick = () => openDeck(id, !left, cardRowsPref(id));
+  $("rowAll") && ($("rowAll").onclick = () => openDeck(id, true, cardRowsPref(id)));
 }
 
 // Mot d'exemple d'un kana, affiché au dos de sa carte (comme dans la fiche du kana)
@@ -354,9 +421,9 @@ function cardFaces(it) {
 function renderCard() {
   if (DECKS[session.deck].kind === "particle" && session.queue.length) return renderParticle();
   const v = $("view-cards"), s = session, d = DECKS[s.deck];
-  const total = s.items.length, known = knownSet(s.deck).size;
+  const ks = knownSet(s.deck), total = s.items.length, known = s.items.filter((it) => ks.has(it.id)).length;
   const head = `<div class="deck-head">
-      <button class="btn small" id="cardBack">← ${L("Paquets", "Decks")}</button>
+      <button class="btn small" id="cardBack">← ${s.rows ? L("Lignes", "Rows") : L("Paquets", "Decks")}</button>
       <div><strong>${esc(d.title)}</strong><div class="muted">${s.review ? L("Révision complète", "Full review") : `${L("Maîtrisées :", "Mastered:")} ${known}/${total}`}</div></div>
     </div>`;
   if (!s.queue.length) {
@@ -368,8 +435,13 @@ function renderCard() {
         <button class="btn gold" id="cardAgain">${known === total ? L("Tout revoir", "Review all") : L("Continuer", "Continue")}</button>
         <button class="btn" id="cardReset">${L("Réinitialiser", "Reset")}</button>
       </div></div>`;
-    $("cardAgain").onclick = () => openDeck(s.deck, known === total);
-    $("cardReset").onclick = () => { delete learn.known[s.deck]; saveLearn(); openDeck(s.deck); };
+    $("cardAgain").onclick = () => openDeck(s.deck, known === total, s.rows);
+    $("cardReset").onclick = () => {
+      // ne réinitialise que les cartes révisées (les lignes choisies pour les kana)
+      const ids = new Set(s.items.map((it) => it.id));
+      learn.known[s.deck] = [...knownSet(s.deck)].filter((x) => !ids.has(x)); saveLearn();
+      openDeck(s.deck, false, s.rows);
+    };
     $("cardBack").onclick = closeDeck;
     return;
   }
@@ -401,7 +473,11 @@ function renderCard() {
   };
   $("cardBack").onclick = closeDeck;
 }
-function closeDeck() { session = null; renderDecks(); }
+function closeDeck() {
+  const back = session && session.rows && session.deck;
+  session = null;
+  back ? renderKanaRowPicker(back) : renderDecks();
+}
 
 // ---------- Particules : phrases à trous ----------
 const MEMO_ROWS = [
