@@ -124,6 +124,8 @@ body.no-romaji .romaji { display: none; }
 }
 .composer button { width: 44px; height: 44px; border-radius: 50%; border: none; flex-shrink: 0; font-size: 1.1rem; }
 .send { background: var(--accent); color: #fff; }
+body.voice-text .mic { display: none; }
+.voice-btn { white-space: nowrap; }
 .send:disabled { opacity: .5; }
 .mic { background: var(--panel); border: 1px solid var(--border) !important; }
 .mic.listening { background: var(--accent); color: #fff; animation: pulse 1.2s infinite; }
@@ -291,24 +293,21 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .cal-help { color: var(--muted); font-size: .8rem; margin: 10px 2px 0; }
 
 /* ============ Bouton + fenêtre « Mot du jour » ============ */
-#view-chat { position: relative; }
+/* bouton « Mot du jour » dans la barre de la page Sakura */
 .fab-wotd {
-  position: absolute; right: 14px; top: 58px; z-index: 2;
-  display: flex; flex-direction: column; align-items: center; gap: 1px;
-  width: 64px; padding: 6px 0 5px; border-radius: 16px;
+  position: relative; flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 10px; font-weight: 800; font-size: .85rem;
   background: linear-gradient(180deg, #ffe07a, #ffbf1f); color: #4a2a00;
-  border: 2px solid var(--b-gold-d); box-shadow: 0 4px 0 var(--b-gold-d), 0 6px 14px rgba(0,0,0,.2);
-  animation: bob 2.6s ease-in-out infinite;
+  border: 2px solid var(--b-gold-d); box-shadow: 0 3px 0 var(--b-gold-d);
 }
-.fab-wotd:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--b-gold-d); animation: none; }
-.fab-ic { font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
-.fab-tl { font-size: .62rem; font-weight: 800; line-height: 1.1; text-align: center; }
+.fab-wotd:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--b-gold-d); }
+.fab-ic { font-size: 1.05rem; line-height: 1; }
+.fab-tl { white-space: nowrap; }
 .fab-wotd .dot {
-  position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
-  background: var(--b-red); border: 2px solid #fff; box-shadow: 0 2px 0 var(--b-red-d);
+  position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--b-red); border: 2px solid #fff; animation: bob 2.2s ease-in-out infinite;
 }
-@keyframes bob { 50% { transform: translateY(-3px); } }
-.chat { padding-top: 84px; }
+@keyframes bob { 50% { transform: translateY(-2px); } }
 .wotd-dialog { width: min(560px, calc(100vw - 24px)); max-height: 90dvh; padding: 0; background: var(--bg); overflow: hidden; }
 .wotd-dialog[open] { display: flex; flex-direction: column; animation: popin .25s cubic-bezier(.3,1.4,.5,1); }
 @keyframes popin { from { transform: scale(.85); opacity: 0; } }
@@ -631,8 +630,9 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   .tabs button.active .tl { font-size: .78rem; }
   .tabs .ti { font-size: 1.35rem; }
 
-  .fab-wotd { right: 10px; top: 60px; border-color: #0f2a6b; box-shadow: 0 4px 0 #0f2a6b, 0 6px 14px rgba(0,0,0,.35); }
-  .fab-tl { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; font-size: .66rem; }
+  .fab-wotd { border-color: #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; padding: 5px 9px; }
+  .fab-wotd .fab-tl, .voice-btn .vb-tl, #btnNew .nb-tl { display: none; }
+  .fab-ic { font-size: 1.2rem; }
   .wotd-dialog {
     background: linear-gradient(180deg, #2453b8, #0c1b42); border: 3px solid #0f2a6b; border-radius: 22px;
     box-shadow: 0 6px 0 #08132f;
@@ -670,4 +670,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 
   .bf-row.mastered small { color: #ffe07a; text-shadow: 0 1px 0 #8a5a00; }
   .row-preview { color: #dbe3ff; }
+
+  .scenario-bar label { display: none; }
+  .scenario-bar { gap: 6px; }
 }

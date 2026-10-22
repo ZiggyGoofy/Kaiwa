@@ -100,7 +100,7 @@ const RESPOND_TOOL = {
 // ---------- État ----------
 const defaults = {
   provider: "groq", keys: {}, models: { groq: "openai/gpt-oss-120b", openrouter: "", anthropic: "claude-haiku-5-5" },
-  autoSpeak: true, autoSend: false, rate: 0.85, furi: true, romaji: false,
+  voice: "text", autoSpeak: true, autoSend: false, rate: 0.85, furi: true, romaji: false,
 };
 let settings = { ...defaults, ...load(SETTINGS, {}) };
 // migration de l'ancienne version (une seule clé Claude)
@@ -299,7 +299,7 @@ async function turn() {
     state.messages.push({ role: "assistant", text: toPlain(data.reply), data });
     save();
     busy = false; render();
-    if (settings.autoSpeak) speak(toPlain(data.reply));
+    if (settings.voice === "oral" && settings.autoSpeak) speak(toPlain(data.reply));
   } catch (e) {
     busy = false;
     // retire le message utilisateur resté sans réponse pour garder l'alternance user/assistant
@@ -387,6 +387,23 @@ input.addEventListener("keydown", (e) => {
 $("composer").onsubmit = (e) => { e.preventDefault(); send(input.value); };
 $("btnNew").onclick = newConversation;
 
+// Mode écrit (par défaut) : pas de lecture automatique, pas de micro.
+// Mode oral : Sakura lit ses réponses et le micro est disponible. Le bouton 🔊 reste là dans les deux cas.
+function applyVoiceMode() {
+  const oral = settings.voice === "oral";
+  document.body.classList.toggle("voice-text", !oral);
+  $("btnVoice").innerHTML = oral ? `🎙️<span class="vb-tl"> ${L("Oral", "Voice")}</span>` : `⌨️<span class="vb-tl"> ${L("Écrit", "Text")}</span>`;
+  $("btnVoice").title = oral
+    ? L("Mode oral : Sakura lit ses réponses, micro activé. Touche pour passer à l'écrit.", "Voice mode: Sakura reads her replies, microphone on. Tap for text mode.")
+    : L("Mode écrit : pas de lecture automatique ni de micro. Touche pour passer à l'oral.", "Text mode: no auto-reading, no microphone. Tap for voice mode.");
+  $("btnVoice").classList.toggle("gold", oral);
+}
+$("btnVoice").onclick = () => {
+  settings.voice = settings.voice === "oral" ? "text" : "oral";
+  if (settings.voice === "text") { speechSynthesis?.cancel(); if (listening) rec.stop(); }
+  save(); applyVoiceMode();
+};
+
 const sel = $("scenario");
 for (const [k, v] of Object.entries(SCENARIOS)) sel.add(new Option(v, k));
 sel.value = state.scenario;
@@ -471,6 +488,7 @@ $("settings").addEventListener("close", () => {
 // ---------- Démarrage ----------
 applyStaticText();
 applyToggles();
+applyVoiceMode();
 document.querySelectorAll(".lang-btn").forEach((b) => (b.onclick = () => { $("langDialog").close(); setLang(b.dataset.lang); }));
 $("langDialog").addEventListener("cancel", (e) => e.preventDefault()); // on doit choisir une langue
 if (!LANG_CHOSEN) $("langDialog").showModal();

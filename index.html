@@ -38,11 +38,12 @@
       <div class="scenario-bar">
         <label for="scenario" data-i18n="theme">Thème :</label>
         <select id="scenario"></select>
-        <button class="btn small" id="btnNew" title="Nouvelle conversation" data-i18n-title="tNew" data-i18n="newConv">＋ Nouvelle</button>
+        <button class="btn small voice-btn" id="btnVoice" type="button"></button>
+        <button class="btn small" id="btnNew" title="Nouvelle conversation" data-i18n-title="tNew">＋<span class="nb-tl" data-i18n="newConv"> Nouvelle</span></button>
+        <button class="fab-wotd" id="btnWotd" type="button" title="Mot du jour" data-i18n-title="wotd">
+          <span class="fab-ic" lang="ja">日</span><span class="fab-tl" data-i18n="wotd">Mot du jour</span><span class="dot" id="wotdDot"></span>
+        </button>
       </div>
-      <button class="fab-wotd" id="btnWotd" title="Mot du jour" data-i18n-title="wotd">
-        <span class="fab-ic" lang="ja">日</span><span class="fab-tl" data-i18n="wotd">Mot du jour</span><span class="dot" id="wotdDot"></span>
-      </button>
       <main id="chat" class="chat" aria-live="polite"></main>
       <div id="suggestions" class="suggestions"></div>
       <form id="composer" class="composer">
@@ -109,7 +110,7 @@
       <label><span data-i18n="otherModel">Autre modèle (facultatif)</span>
         <input type="text" id="customModel" placeholder="identifiant exact du modèle" data-i18n-ph="otherModelPh" autocomplete="off">
       </label>
-      <label class="row"><input type="checkbox" id="autoSpeak"> <span data-i18n="autoSpeak">Lire automatiquement les réponses</span></label>
+      <label class="row"><input type="checkbox" id="autoSpeak"> <span data-i18n="autoSpeak">Lire automatiquement les réponses (mode oral)</span></label>
       <label class="row"><input type="checkbox" id="autoSend"> <span data-i18n="autoSend">Envoyer automatiquement après la dictée</span></label>
       <label><span><span data-i18n="voiceRate">Vitesse de la voix :</span> <span id="rateVal"></span></span>
         <input type="range" id="rate" min="0.5" max="1.2" step="0.05">

@@ -2,10 +2,10 @@
 
 Application web pour pratiquer le japonais (niveau débutant N5-N4) : conversation avec « Sakura », un chatbot IA, et exercices hors ligne.
 
-**Avec Sakura (clé API gratuite Groq/OpenRouter, ou Claude payant)** : conversation par thèmes · correction de tes phrases avec explication en français · furigana et rōmaji (activables) · traduction au clic · dictée vocale en japonais · lecture audio · suggestions de réponses.
+**Avec Sakura (clé API gratuite Groq/OpenRouter, ou Claude payant)** : mode ⌨️ Écrit (par défaut, sans voix ni micro) ou 🎙️ Oral (lecture automatique + micro), à basculer d'un bouton · conversation par thèmes · correction de tes phrases avec explication en français · furigana et rōmaji (activables) · traduction au clic · dictée vocale en japonais · lecture audio · suggestions de réponses.
 
 **Sans clé API (hors ligne)** :
-- **Mot du jour** (bouton doré sur la page Sakura) — un mot par jour avec phrase d'exemple et audio, calendrier (✓ sur les jours appris, jours passés à rattraper), série de jours d'affilée. Pastille rouge tant que le mot du jour n'est pas appris
+- **Mot du jour** (bouton doré 日 dans la barre de la page Sakura) — un mot par jour avec phrase d'exemple et audio, calendrier (✓ sur les jours appris, jours passés à rattraper), série de jours d'affilée. Pastille rouge tant que le mot du jour n'est pas appris
 - **Kana** — tableaux hiragana / katakana (base, dakuten, combinaisons). Touche un caractère pour ouvrir sa fiche : grand caractère, audio, mot d'exemple avec le kana surligné (ex. **と**もだち – tomodachi – ami), kanji, illustration et traduction. Flèches ou balayage pour passer au suivant
 - **Phrases** — 8 thèmes de phrases utiles avec audio, et bouton « Pratiquer avec Sakura »
 - **Cartes** — flashcards qui se retournent (kana, 13 catégories de vocabulaire, phrases). Pour les kana, on choisit d'abord les lignes du tableau à réviser (あ, か, … dakuten, combinaisons), avec la progression de chaque ligne, sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
@@ -103,4 +103,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v13` → `kaiwa-v14` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v14` → `kaiwa-v15` dans `sw.js` pour forcer la mise à jour sur le téléphone.

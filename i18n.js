@@ -20,11 +20,11 @@ function setLang(lang) {
 // Textes fixes de index.html (attributs data-i18n, data-i18n-title, data-i18n-ph)
 const STATIC_EN = {
   tabKana: "Kana", tabPhrases: "Phrases", tabCards: "Cards", tabQuiz: "Quiz",
-  theme: "Topic:", newConv: "＋ New", wotd: "Word of the day",
+  theme: "Topic:", newConv: " New", wotd: "Word of the day",
   inputPh: "Write in Japanese (or in English if you're stuck)…",
   settings: "Settings", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
   keyLocal: "The key stays on this device only.", model: "Model", otherModel: "Other model (optional)",
-  otherModelPh: "exact model ID", autoSpeak: "Read replies aloud automatically",
+  otherModelPh: "exact model ID", autoSpeak: "Read replies aloud automatically (voice mode)",
   autoSend: "Send automatically after dictation", voiceRate: "Voice speed:", close: "Close",
   tFuri: "Show furigana", tRomaji: "Show rōmaji", tSettings: "Settings", tPoints: "Your points",
   tNew: "New conversation", tMic: "Speak (Japanese)", tSend: "Send", tClose: "Close",
