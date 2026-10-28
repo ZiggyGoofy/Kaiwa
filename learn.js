@@ -199,6 +199,32 @@ renderers.kana = function () {
   $("kanaQuiz").onclick = () => { showView("quiz"); startQuiz(set); };
 };
 
+// ---------- Moyens mnémotechniques ----------
+const KANA_ROMAJI = Object.fromEntries([...KANA_ROWS, ...KANA_DAKUTEN, ...KANA_COMBO].flat().filter(Boolean));
+const toHiraChar = (s) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const romajiOf = (k) => KANA_ROMAJI[toHiraChar(k)] || "";
+const HANDAKUTEN = new Set(KANA_DAKUTEN[4].map((c) => c[0])); // ぱ ぴ ぷ ぺ ぽ
+const DAKUTEN = new Set(KANA_DAKUTEN.slice(0, 4).flat().map((c) => c[0]));
+function kanaMnemo(ch) {
+  if (KANA_MNEMO[ch]) return L(...KANA_MNEMO[ch]);
+  const h = toHiraChar(ch), r = romajiOf(ch);
+  // combinaisons : き + ゃ → kya
+  if (ch.length === 2) {
+    const base = ch[0], small = ch[1], rb = romajiOf(base), rs = { "ゃ": "ya", "ゅ": "yu", "ょ": "yo" }[toHiraChar(small)];
+    return L(`${base} (${rb}) + petit ${small} (${rs}) : on les fond en une seule syllabe, « ${r} ». Le ${small} est écrit en petit.`,
+             `${base} (${rb}) + small ${small} (${rs}): blend them into one syllable, “${r}”. The ${small} is written small.`);
+  }
+  // dakuten ゛ (k→g, s→z, t→d, h→b) et handakuten ゜ (h→p)
+  if (DAKUTEN.has(h) || HANDAKUTEN.has(h)) {
+    const maru = HANDAKUTEN.has(h);
+    const base = String.fromCharCode(ch.charCodeAt(0) - (maru ? 2 : 1)), rb = romajiOf(base);
+    const tip = maru ? L("le petit rond ゜ transforme le son « h » en « p »", "the little circle ゜ turns the “h” sound into “p”")
+                     : L("les deux petits traits ゛ rendent le son plus sonore", "the two little marks ゛ make the sound voiced");
+    return L(`${base} (${rb}) + ${maru ? "゜" : "゛"} = « ${r} » : ${tip}.`, `${base} (${rb}) + ${maru ? "゜" : "゛"} = “${r}”: ${tip}.`);
+  }
+  return "";
+}
+
 // ---------- Fiche d'un kana (style Renshuu) ----------
 let kanaList = [], kanaPos = 0;
 function openKana(ch) {
@@ -222,6 +248,7 @@ function renderKanaDetail(sayIt) {
       <button class="kd-char" id="kdChar" lang="ja" title="${L("Écouter", "Listen")}">${esc(ch)}</button>
       <button class="kd-nav" id="kdNext" ${kanaPos === kanaList.length - 1 ? "disabled" : ""} title="${L("Suivant", "Next")}">›</button>
     </div>
+    ${kanaMnemo(ch) ? `<div class="kd-mnemo"><span>💡</span><p>${esc(kanaMnemo(ch))}</p></div>` : ""}
     ${ex ? `
     <div class="kd-example">
       <div class="kd-word">
@@ -392,9 +419,10 @@ function renderKanaRowPicker(id) {
 
 // Mot d'exemple d'un kana, affiché au dos de sa carte (comme dans la fiche du kana)
 function kanaExample(ch) {
-  const ex = KANA_EX[ch];
-  if (!ex) return "";
-  return `<div class="card-ex">
+  const ex = KANA_EX[ch], tip = kanaMnemo(ch);
+  const mnemo = tip ? `<div class="card-mnemo">💡 ${esc(tip)}</div>` : "";
+  if (!ex) return mnemo;
+  return mnemo + `<div class="card-ex">
     <span class="card-ex-pic">${ex[5]}</span>
     <div>
       <div class="card-ex-kana" lang="ja">${hl(ex[0])}${ex[2] ? ` <small lang="ja">${esc(ex[2])}</small>` : ""}</div>
