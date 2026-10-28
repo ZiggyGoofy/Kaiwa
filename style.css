@@ -408,17 +408,32 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .kd-count { color: #999; font-size: .8rem; margin-top: 10px; }
 .kana-dialog .close-x { z-index: 3; }
 
-/* Moyen mnémotechnique (fiche + dos des cartes) */
-.kd-mnemo {
-  display: flex; gap: 10px; align-items: flex-start; text-align: left; margin: 6px 4px 4px;
-  background: rgba(255, 210, 80, .12); border: 1px solid rgba(255, 210, 80, .45); border-radius: 14px; padding: 10px 12px;
+/* Moyen mnémotechnique visuel : le kana dessiné sur l'objet */
+.mnemo {
+  display: flex; gap: 14px; align-items: center; text-align: left; margin: 8px 4px 6px;
+  background: #fff; color: #1d2433; border-radius: 16px; padding: 10px 14px 10px 10px;
+  box-shadow: 0 3px 0 rgba(0,0,0,.25);
 }
-.kd-mnemo span { font-size: 1.3rem; line-height: 1.2; }
-.kd-mnemo p { margin: 0; color: #fff2c8; font-size: .98rem; line-height: 1.45; }
-.card-mnemo {
-  margin-top: 4px; padding: 8px 12px; border-radius: 12px; font-size: .9rem; line-height: 1.4; text-align: left;
-  background: rgba(255, 191, 31, .16); color: var(--ink); max-width: 100%;
+.mn-pic { position: relative; width: 92px; height: 92px; flex-shrink: 0; display: grid; place-items: center; }
+.mn-emoji { font-size: 70px; line-height: 1; filter: saturate(1.1); }
+.mn-kana {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 66px; font-weight: 800; line-height: 1; color: #2b2f3a;
+  -webkit-text-stroke: 1.5px #fff; paint-order: stroke fill; opacity: .88;
+  font-family: "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", "Yu Gothic", system-ui, sans-serif;
 }
+.mn-txt { min-width: 0; }
+.mn-word { font-size: 1.35rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #9aa0ad; line-height: 1.15; }
+.mn-hl { color: #c8343e; }
+.mnemo p { margin: 4px 0 0; font-size: .92rem; line-height: 1.4; color: #3a4152; }
+.mnemo.no-pic { padding: 10px 14px; }
+.mnemo.no-pic .mn-word { text-transform: none; letter-spacing: 0; font-size: 1.1rem; color: #3a4152; }
+.mnemo.compact { margin: 4px 0; padding: 6px 10px 6px 6px; gap: 10px; box-shadow: none; background: rgba(255,255,255,.75); }
+.mnemo.compact .mn-pic { width: 64px; height: 64px; }
+.mnemo.compact .mn-emoji { font-size: 48px; }
+.mnemo.compact .mn-kana { font-size: 44px; -webkit-text-stroke: 1px #fff; }
+.mnemo.compact .mn-word { font-size: 1.05rem; }
+.mnemo.compact p { font-size: .82rem; }
 
 /* Mot d'exemple au dos des cartes de kana */
 .card-ex {

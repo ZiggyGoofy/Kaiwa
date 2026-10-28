@@ -98,10 +98,10 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 
 - Thèmes de conversation : objet `SCENARIOS` dans `app.js`
 - Changer l'exemple d'un kana : `KANA_EX` dans `content.js`, format `[mot avec [kana], rōmaji avec [syllabe], kanji, français, anglais, emoji]`
-- Changer un moyen mnémotechnique : `KANA_MNEMO` dans `content.js`, format `[français, anglais]` (dakuten et combinaisons générés automatiquement)
+- Changer un moyen mnémotechnique : `KANA_MNEMO` dans `content.js`, format `[image, mot FR avec [son], explication FR, image EN ou null, mot EN avec [son], explication EN]` (dakuten et combinaisons générés automatiquement)
 - Ajouter des mots du jour : `WORDS_OF_DAY` dans `content.js`, format `[mot, romaji, français, exemple, traduction]`
 - Si tu ajoutes du contenu dans `content.js`, ajoute sa traduction anglaise **au même endroit** dans `content-en.js` (sinon la console affiche « EN content mismatch » et la liste reste en français en mode anglais)
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v16` → `kaiwa-v17` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v17` → `kaiwa-v18` dans `sw.js` pour forcer la mise à jour sur le téléphone.
