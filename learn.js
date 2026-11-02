@@ -199,6 +199,63 @@ renderers.kana = function () {
   $("kanaQuiz").onclick = () => { showView("quiz"); startQuiz(set); };
 };
 
+// ---------- Moyens mnémotechniques ----------
+const KANA_ROMAJI = Object.fromEntries([...KANA_ROWS, ...KANA_DAKUTEN, ...KANA_COMBO].flat().filter(Boolean));
+const toHiraChar = (s) => s.replace(/[\u30a1-\u30f6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const romajiOf = (k) => KANA_ROMAJI[toHiraChar(k)] || "";
+const HANDAKUTEN = new Set(KANA_DAKUTEN[4].map((c) => c[0])); // ぱ ぴ ぷ ぺ ぽ
+const DAKUTEN = new Set(KANA_DAKUTEN.slice(0, 4).flat().map((c) => c[0]));
+// Couleur du panneau : une par ligne du tableau (les dakuten/combinaisons prennent celle de leur kana de base)
+function mnemoColor(ch) {
+  let h = toHiraChar(ch[0]);
+  if (DAKUTEN.has(h)) h = String.fromCharCode(h.charCodeAt(0) - 1);
+  if (HANDAKUTEN.has(h)) h = String.fromCharCode(h.charCodeAt(0) - 2);
+  const row = KANA_ROWS.findIndex((r) => r.some((c) => c && c[0] === h));
+  return MNEMO_ROW_COLORS[Math.max(0, row)];
+}
+// Renvoie { svg, word, text } : dessin, mot-clé (avec [son]) et explication
+function kanaMnemo(ch) {
+  const m = KANA_MNEMO[ch];
+  if (m) return { svg: m[4], word: L(m[0], m[1]), text: L(m[2], m[3]) };
+  const r = romajiOf(ch), h = toHiraChar(ch);
+  // combinaisons : き + ゃ → kya (on reprend le dessin du kana de base)
+  if (ch.length === 2) {
+    const base = ch[0], small = ch[1], rb = romajiOf(base), rs = { "ゃ": "ya", "ゅ": "yu", "ょ": "yo" }[toHiraChar(small)];
+    return { svg: KANA_MNEMO[base]?.[4], word: `[${r}]`, sub: `${rb} + ${rs}`, text: L(
+      `${base} (${rb}) + petit ${small} (${rs}) : on les fond en une seule syllabe, « ${r} ». Le ${small} est écrit en petit.`,
+      `${base} (${rb}) + small ${small} (${rs}): blend them into one syllable, “${r}”. The ${small} is written small.`) };
+  }
+  // dakuten (k→g, s→z, t→d, h→b) et handakuten (h→p) : dessin du kana de base + les petits signes
+  if (DAKUTEN.has(h) || HANDAKUTEN.has(h)) {
+    const maru = HANDAKUTEN.has(h);
+    const base = String.fromCharCode(ch.charCodeAt(0) - (maru ? 2 : 1)), rb = romajiOf(base);
+    const tip = maru ? L("le petit rond (maru) transforme le son « h » en « p »", "the little circle (maru) turns the “h” sound into “p”")
+                     : L("les deux petits traits (tenten) rendent le son plus sonore", "the two little marks (tenten) make the sound voiced");
+    return { svg: KANA_MNEMO[base]?.[4], word: `[${r}]`, sub: `${rb} + ${maru ? "maru ゜" : "tenten ゛"}`, text: L(`${base} (${rb}) + ${tip}.`, `${base} (${rb}) + ${tip}.`) };
+  }
+  return null;
+}
+// [A]vocat → « A » en couleur, le reste en gris
+const mnemoWord = (w, color) => esc(w).replace(/\[(.+?)\]/g, `<b style="color:${color}">$1</b>`);
+// Carte mnémotechnique façon « affiche » : kana blanc sur fond coloré | dessin + mot-clé
+function mnemoHTML(ch, compact) {
+  const m = kanaMnemo(ch);
+  if (!m) return "";
+  const color = mnemoColor(ch);
+  return `<div class="mn ${compact ? "compact" : ""}">
+    <div class="mn-split">
+      <button class="mn-left ${ch.length > 1 ? "two" : ""}" data-say="${esc(ch)}" style="background:${color}" lang="ja" title="${L("Écouter", "Listen")}">${esc(ch)}</button>
+      <div class="mn-right">
+        ${m.svg ? `<div class="mn-art"><svg viewBox="0 0 100 100" aria-hidden="true">${m.svg}</svg><span class="mn-glyph ${ch.length > 1 ? "two" : ""}" lang="ja">${esc(ch)}</span></div>`
+                : `<div class="mn-formula" lang="ja">${m.formula}</div>`}
+        <div class="mn-word">${mnemoWord(m.word, color)}</div>
+        ${m.sub ? `<div class="mn-sub">${esc(m.sub)}</div>` : ""}
+      </div>
+    </div>
+    <p class="mn-text">${esc(m.text)}</p>
+  </div>`;
+}
+
 // ---------- Fiche d'un kana (style Renshuu) ----------
 let kanaList = [], kanaPos = 0;
 function openKana(ch) {
@@ -217,11 +274,7 @@ function renderKanaDetail(sayIt) {
   const word = ex ? unbracket(ex[0]) : "";
   $("kanaDetail").innerHTML = `
     <div class="kd-head"><b>${esc(rom)}</b> <span>(${script})</span></div>
-    <div class="kd-main">
-      <button class="kd-nav" id="kdPrev" ${kanaPos === 0 ? "disabled" : ""} title="${L("Précédent", "Previous")}">‹</button>
-      <button class="kd-char" id="kdChar" lang="ja" title="${L("Écouter", "Listen")}">${esc(ch)}</button>
-      <button class="kd-nav" id="kdNext" ${kanaPos === kanaList.length - 1 ? "disabled" : ""} title="${L("Suivant", "Next")}">›</button>
-    </div>
+    ${mnemoHTML(ch) || `<button class="kd-char" data-say="${esc(ch)}" lang="ja">${esc(ch)}</button>`}
     ${ex ? `
     <div class="kd-example">
       <div class="kd-word">
@@ -232,8 +285,12 @@ function renderKanaDetail(sayIt) {
       <button class="kd-pic" id="kdPic" title="${L("Écouter le mot", "Listen to the word")}">${ex[5]}<span class="kd-say-small">🔊</span></button>
       <div class="kd-tr">${esc(L(ex[3], ex[4]))}</div>
     </div>` : `<p class="kd-none">${L("Ce kana est très rare : pas de mot courant à montrer.", "This kana is very rare: no common word to show.")}</p>`}
-    <div class="kd-count">${kanaPos + 1} / ${kanaList.length}</div>`;
-  $("kdChar").onclick = () => { speak(ch); pop($("kdChar")); };
+    <div class="kd-navrow">
+      <button class="kd-nav" id="kdPrev" ${kanaPos === 0 ? "disabled" : ""} title="${L("Précédent", "Previous")}">‹</button>
+      <span class="kd-count">${kanaPos + 1} / ${kanaList.length}</span>
+      <button class="kd-nav" id="kdNext" ${kanaPos === kanaList.length - 1 ? "disabled" : ""} title="${L("Suivant", "Next")}">›</button>
+    </div>`;
+  $("kanaDetail").querySelectorAll("[data-say]").forEach((b) => (b.onclick = () => { speak(b.dataset.say); pop(b); }));
   if (ex) {
     $("kdSayWord").onclick = () => speak(word);
     $("kdPic").onclick = () => { speak(word); pop($("kdPic")); };
@@ -393,8 +450,9 @@ function renderKanaRowPicker(id) {
 // Mot d'exemple d'un kana, affiché au dos de sa carte (comme dans la fiche du kana)
 function kanaExample(ch) {
   const ex = KANA_EX[ch];
-  if (!ex) return "";
-  return `<div class="card-ex">
+  const mnemo = mnemoHTML(ch, true);
+  if (!ex) return mnemo;
+  return mnemo + `<div class="card-ex">
     <span class="card-ex-pic">${ex[5]}</span>
     <div>
       <div class="card-ex-kana" lang="ja">${hl(ex[0])}${ex[2] ? ` <small lang="ja">${esc(ex[2])}</small>` : ""}</div>
@@ -465,6 +523,7 @@ function renderCard() {
   };
   $("flip").onclick = flip;
   $("flip").onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
+  v.querySelectorAll(".face [data-say]").forEach((b) => (b.onclick = (e) => { e.stopPropagation(); speak(b.dataset.say); }));
   $("cardSay").onclick = (e) => { e.stopPropagation(); const ex = !it.fr && KANA_EX[it.ja]; speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja)); };
   $("cardAgainOne").onclick = () => { s.queue.shift(); s.queue.splice(Math.min(3, s.queue.length), 0, it); s.flipped = false; renderCard(); };
   $("cardKnow").onclick = () => {
@@ -601,9 +660,15 @@ function renderQuizHome() {
         <span class="deck-icon">⌨️</span>
         <span><span class="deck-title">Brute force (kana)</span><span class="muted">${L("Tape la lecture de chaque kana · choisis lesquels", "Type each kana's reading · pick which ones")}</span></span>
         <span class="best">${L("Entraînement", "Training")}</span>
+      </button>
+      <button class="mode speed-mode" id="speedOpen">
+        <span class="deck-icon">⚡</span>
+        <span><span class="deck-title">${L("Jeu de vitesse", "Speed game")}</span><span class="muted">${L("60 secondes, un maximum de bonnes réponses", "60 seconds, as many right answers as you can")}</span></span>
+        <span class="best">${Object.values(learn.speed || {}).length ? `🏅 ${Math.max(...Object.values(learn.speed))}<br><small>${L("record", "best")}</small>` : L("Nouveau", "New")}</span>
       </button></div>`;
   document.querySelectorAll(".mode[data-k]").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
   $("bfOpen").onclick = () => openBruteForce();
+  $("speedOpen").onclick = () => openSpeed();
 }
 
 function stars(score) {

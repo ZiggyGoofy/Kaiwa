@@ -623,3 +623,4 @@ const KANA_EX = {
   "ビュ": ["[ビュ]ッフェ", "[byu]ffe", "", "buffet", "buffet", "🥗"],
   "ピュ": ["[ピュ]ーレ", "[pyu]ure", "", "purée", "purée", "🥣"],
 };
+

@@ -408,6 +408,57 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .kd-count { color: #999; font-size: .8rem; margin-top: 10px; }
 .kana-dialog .close-x { z-index: 3; }
 
+/* Carte mnémotechnique façon affiche : kana blanc sur fond coloré | dessin + mot-clé */
+.mn { margin: 6px 0 4px; }
+.mn-split {
+  position: relative; display: grid; grid-template-columns: 1fr 1.05fr; min-height: 190px;
+  border-radius: 18px; overflow: hidden; background: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.25);
+}
+.mn-left {
+  border: none; color: #fff; font-size: clamp(5.2rem, 24vw, 7.5rem); line-height: 1; display: grid; place-items: center;
+  clip-path: polygon(0 0, 100% 0, 84% 100%, 0 100%); padding-right: 10%;
+  font-family: "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", "Yu Gothic", system-ui, sans-serif; font-weight: 500;
+}
+/* bandes grises du biseau, comme sur l'affiche */
+.mn-split::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: calc(48.8% - 6px); width: 22px;
+  background: linear-gradient(90deg, #c9c9c9 0 50%, #e6e6e6 50% 100%);
+  clip-path: polygon(35% 0, 100% 0, 50% 100%, -15% 100%); pointer-events: none;
+}
+.mn-right { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 8px 12px 4px; z-index: 1; }
+.mn-art { position: relative; width: 118px; height: 118px; }
+.mn-art svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mn-glyph {
+  position: absolute; inset: 0; display: grid; place-items: center; line-height: 1;
+  font-size: 74px; font-weight: 800; color: #3a3d46;
+  -webkit-text-stroke: 4px #fff; paint-order: stroke fill;
+  font-family: "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", "Yu Gothic", system-ui, sans-serif;
+}
+.mn-left.two { font-size: clamp(3.4rem, 15vw, 4.6rem); white-space: nowrap; letter-spacing: -6px; }
+.mn.compact .mn-left.two { font-size: 2.6rem; }
+.mn-sub { font-size: .8rem; color: #9aa0ad; letter-spacing: 1px; margin-top: -2px; }
+.mn-glyph.two { font-size: 46px; letter-spacing: -4px; }
+.mn.compact .mn-glyph.two { font-size: 32px; }
+.mn-formula { font-size: 3.4rem; color: #3a3d46; font-weight: 700; line-height: 1.2; display: flex; align-items: center; gap: 4px; }
+.mn-formula small { font-size: 1.6rem; color: #b0b4bd; }
+.mn-formula .mn-small { font-size: 2.2rem; }
+.mn-word {
+  font-size: 1.05rem; padding: 0 4px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #c3c6cc;
+  text-align: center; line-height: 1.2; font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+}
+.mn-text { margin: 10px 4px 0; font-size: .95rem; line-height: 1.45; color: #e8e8e8; text-align: center; }
+.kd-navrow { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; }
+.kd-navrow .kd-count { margin: 0; }
+/* version compacte, au dos des cartes */
+.mn.compact { width: 100%; margin: 0; }
+.mn.compact .mn-split { min-height: 120px; box-shadow: 0 2px 0 rgba(0,0,0,.12); border: 1px solid rgba(0,0,0,.06); }
+.mn.compact .mn-left { font-size: 4rem; }
+.mn.compact .mn-art { width: 78px; height: 78px; }
+.mn.compact .mn-glyph { font-size: 50px; -webkit-text-stroke: 3px #fff; }
+.mn.compact .mn-formula { font-size: 2.2rem; }
+.mn.compact .mn-word { font-size: .82rem; letter-spacing: 1.5px; }
+.mn.compact .mn-text { color: var(--muted); font-size: .82rem; margin-top: 6px; }
+
 /* Mot d'exemple au dos des cartes de kana */
 .card-ex {
   display: flex; align-items: center; gap: 12px; margin-top: 6px; padding: 10px 14px;
@@ -674,3 +725,25 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   .scenario-bar label { display: none; }
   .scenario-bar { gap: 6px; }
 }
+
+/* ============ Jeu de vitesse ============ */
+.speed-mode { border-color: #ff9f1a; }
+.sp-time { font-size: 1.6rem; font-weight: 800; min-width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+.sp-bar i { transition: width .1s linear, background .3s; }
+.sp-bar.low i { background: var(--b-red); }
+.sp-bar.low + .sp-time { color: var(--b-red); animation: pop .5s infinite; }
+.sp-stats { display: flex; justify-content: space-between; align-items: center; margin: -8px 4px 10px; font-weight: 700; }
+.sp-stats .muted { display: inline; }
+.sp-q { position: relative; }
+.sp-count { color: var(--accent); }
+.sp-float { position: absolute; top: 10px; right: 16px; font-weight: 800; font-size: 1.3rem; opacity: 0; pointer-events: none; }
+.sp-float.plus { color: var(--b-green-d); }
+.sp-float.minus { color: var(--b-red-d); }
+.sp-float.show { animation: gain .7s ease-out; }
+@media (max-width: 700px) {
+  .speed-mode { border: 2px solid #0f2a6b; background: linear-gradient(90deg, #ffe9d6, #ffc98f); }
+  .sp-time { color: #fff; text-shadow: 0 2px 0 #0a1433; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; }
+  .sp-bar.low + .sp-time { color: #ff6b6b; }
+  .sp-stats, .sp-stats .muted { color: #fff; text-shadow: 0 2px 0 #0a1433; }
+}
+.deck-icon.two { font-size: 1.15rem; white-space: nowrap; letter-spacing: -2px; }
