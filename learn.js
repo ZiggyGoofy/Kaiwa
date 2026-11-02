@@ -663,8 +663,8 @@ function renderQuizHome() {
       </button>
       <button class="mode speed-mode" id="speedOpen">
         <span class="deck-icon">⚡</span>
-        <span><span class="deck-title">${L("Jeu de vitesse", "Speed game")}</span><span class="muted">${L("60 secondes, un maximum de bonnes réponses", "60 seconds, as many right answers as you can")}</span></span>
-        <span class="best">${Object.values(learn.speed || {}).length ? `🏅 ${Math.max(...Object.values(learn.speed))}<br><small>${L("record", "best")}</small>` : L("Nouveau", "New")}</span>
+        <span><span class="deck-title">${L("Jeu de vitesse", "Speed game")}</span><span class="muted">${L("Contre la montre, choisis ta durée", "Against the clock, pick your duration")}</span></span>
+        <span class="best">⏱ 30 s – 2 min</span>
       </button></div>`;
   document.querySelectorAll(".mode[data-k]").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
   $("bfOpen").onclick = () => openBruteForce();

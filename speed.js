@@ -1,7 +1,17 @@
 // Kaiwa — Jeu de vitesse : 60 secondes pour enchaîner un maximum de bonnes réponses.
 // Erreur = -3 s. Toutes les 5 bonnes réponses d'affilée = +2 s.
 
-const SPEED_TIME = 60, SPEED_PENALTY = 3, SPEED_BONUS = 2, SPEED_BONUS_EVERY = 5;
+// durées au choix : moins de temps = plus difficile (un record par mode ET par durée)
+const SPEED_TIMES = [
+  { t: 30, label: L("Difficile", "Hard"), icon: "🔥" },
+  { t: 60, label: L("Normal", "Normal"), icon: "⚡" },
+  { t: 90, label: L("Tranquille", "Relaxed"), icon: "🙂" },
+  { t: 120, label: L("Facile", "Easy"), icon: "🌱" },
+];
+const speedTime = () => (SPEED_TIMES.some((x) => x.t === learn.speedTime) ? learn.speedTime : 60);
+// clé du record : "hira" pour 60 s (compatible avec les anciens records), "hira:30" sinon
+const speedKey = (mode, t) => (t === 60 ? mode : `${mode}:${t}`);
+const SPEED_PENALTY = 3, SPEED_BONUS = 2, SPEED_BONUS_EVERY = 5;
 const SPEED_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la lecture du kana", "Find the kana's reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la lecture du kana", "Find the kana's reading") },
@@ -16,40 +26,47 @@ const speedPool = (mode) => (mode === "mix" ? [...quizPool("hira"), ...quizPool(
 // ---------- Choix du mode ----------
 function renderSpeedSetup() {
   speedScreen = "setup";
-  const best = speedBest();
+  const best = speedBest(), T = speedTime();
   $("view-quiz").innerHTML = `
     <div class="deck-head">
       <button class="btn small" id="spBack">← Quiz</button>
-      <div><strong>⚡ ${L("Jeu de vitesse", "Speed game")}</strong><div class="muted">${L(`${SPEED_TIME} secondes, un maximum de bonnes réponses`, `${SPEED_TIME} seconds, as many right answers as you can`)}</div></div>
+      <div><strong>⚡ ${L("Jeu de vitesse", "Speed game")}</strong><div class="muted">${L("Un maximum de bonnes réponses avant la fin du temps", "As many right answers as you can before time runs out")}</div></div>
     </div>
+    <h3 class="sec">⏱ ${L("Durée", "Duration")}</h3>
+    <div class="sp-times">${SPEED_TIMES.map((x) => `
+      <button class="sp-tbtn ${x.t === T ? "on" : ""}" data-t="${x.t}"><b>${x.t % 60 ? x.t + " s" : x.t / 60 + " min"}</b><small>${x.icon} ${x.label}</small></button>`).join("")}
+    </div>
+    <h3 class="sec">${L("Mode", "Mode")}</h3>
     <div class="mode-list">${Object.entries(SPEED_MODES).map(([k, m]) => `
       <button class="mode" data-k="${k}">
         <span class="deck-icon ${m.icon.length > 1 ? "two" : ""}" lang="ja">${m.icon}</span>
         <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}</span></span>
-        <span class="best">${best[k] ? `🏅 ${best[k]}<br><small>${L("record", "best")}</small>` : L("Nouveau", "New")}</span>
+        <span class="best">${best[speedKey(k, T)] ? `🏅 ${best[speedKey(k, T)]}<br><small>${L(`record ${T} s`, `best ${T} s`)}</small>` : L("Nouveau", "New")}</span>
       </button>`).join("")}
     </div>
     <p class="cal-help">${L(
-      `⏱ ${SPEED_TIME} s au départ · ❌ une erreur coûte ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} bonnes réponses d'affilée = +${SPEED_BONUS} s. Sur PC : touches 1 à 4.`,
-      `⏱ ${SPEED_TIME} s to start · ❌ a mistake costs ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} right answers in a row = +${SPEED_BONUS} s. On PC: keys 1 to 4.`)}</p>`;
+      `⏱ ${T} s au départ · ❌ une erreur coûte ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} bonnes réponses d'affilée = +${SPEED_BONUS} s. Sur PC : touches 1 à 4.`,
+      `⏱ ${T} s to start · ❌ a mistake costs ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} right answers in a row = +${SPEED_BONUS} s. On PC: keys 1 to 4.`)}</p>`;
   $("spBack").onclick = () => renderQuizHome();
+  document.querySelectorAll("#view-quiz .sp-tbtn").forEach((b) => (b.onclick = () => { learn.speedTime = +b.dataset.t; saveLearn(); renderSpeedSetup(); }));
   document.querySelectorAll("#view-quiz .mode[data-k]").forEach((b) => (b.onclick = () => startSpeed(b.dataset.k)));
 }
 
 // ---------- Partie ----------
 function startSpeed(mode) {
   speedScreen = "game";
-  speed = { mode, pool: speedPool(mode), score: 0, wrong: 0, combo: 0, bestCombo: 0, q: null, lock: true, endAt: 0, timer: null };
+  const T = speedTime();
+  speed = { mode, time: T, key: speedKey(mode, T), pool: speedPool(mode), score: 0, wrong: 0, combo: 0, bestCombo: 0, q: null, lock: true, endAt: 0, timer: null };
   $("view-quiz").innerHTML = `
     <div class="quiz-head">
       <button class="btn small" id="spQuit">✕</button>
       <div class="bar big sp-bar"><i id="spBar" style="width:100%"></i></div>
-      <span class="sp-time" id="spTime">${SPEED_TIME}</span>
+      <span class="sp-time" id="spTime">${T}</span>
     </div>
     <div class="sp-stats">
       <span>✅ <b id="spScore">0</b></span>
       <span class="streak" id="spCombo">🔥 0</span>
-      <span class="muted">🏅 ${speedBest()[mode] || 0}</span>
+      <span class="muted">🏅 ${speedBest()[speed.key] || 0}</span>
     </div>
     <div class="quiz-q sp-q" id="spQ"><div class="big-ja" lang="ja" id="spText"></div><span class="sp-float" id="spFloat"></span></div>
     <div class="options" id="spOpts"></div>`;
@@ -60,7 +77,7 @@ function startSpeed(mode) {
     if (!speed || speedScreen !== "game") return;
     if (n > 0) { $("spText").textContent = n; $("spText").className = "big-ja sp-count"; pop($("spText")); n--; setTimeout(count, 650); return; }
     $("spText").className = "big-ja";
-    speed.endAt = performance.now() + SPEED_TIME * 1000;
+    speed.endAt = performance.now() + speed.time * 1000;
     speed.timer = setInterval(tickSpeed, 100);
     nextSpeed();
   };
@@ -123,7 +140,7 @@ function tickSpeed() {
   // on quitte l'onglet Quiz : la partie est abandonnée
   if (document.body.dataset.view !== "quiz") { stopSpeed(); speedScreen = "setup"; return; }
   const left = Math.max(0, s.endAt - performance.now());
-  $("spBar").style.width = Math.min(100, (left / (SPEED_TIME * 1000)) * 100) + "%";
+  $("spBar").style.width = Math.min(100, (left / (s.time * 1000)) * 100) + "%";
   $("spBar").parentElement.classList.toggle("low", left < 10000);
   $("spTime").textContent = Math.ceil(left / 1000);
   if (left <= 0) finishSpeed();
@@ -135,9 +152,9 @@ function finishSpeed() {
   const s = speed;
   stopSpeed();
   speedScreen = "end";
-  const best = speedBest(), prev = best[s.mode] || 0, record = s.score > prev;
+  const best = speedBest(), prev = best[s.key] || 0, record = s.score > prev;
   s.pts = s.score * 3 + (record && prev ? 20 : 0);
-  if (record) best[s.mode] = s.score;
+  if (record) best[s.key] = s.score;
   saveLearn();
   s.levelUp = s.pts ? addPoints(s.pts) : false;
   s.record = record; s.prev = prev;
@@ -148,10 +165,11 @@ function renderSpeedEnd() {
   const s = speed, total = s.score + s.wrong, acc = total ? Math.round((s.score / total) * 100) : 0;
   $("view-quiz").innerHTML = `<div class="finish">
     <div class="finish-icon">⚡</div>
+    <p class="muted">${SPEED_MODES[s.mode].title} · ${s.time} s</p>
     <h2>${s.score} ${P(s.score, "bonne réponse", "bonnes réponses", "right answer", "right answers")}</h2>
     <div class="points-won">+${s.pts} ⭐</div>
-    <p>${s.record ? (s.prev ? L(`🏅 Nouveau record ! (avant : ${s.prev}) +20 ⭐`, `🏅 New record! (before: ${s.prev}) +20 ⭐`) : L("🏅 Premier record établi !", "🏅 First record set!"))
-                  : L(`Record à battre : ${speedBest()[s.mode]}`, `Record to beat: ${speedBest()[s.mode]}`)}</p>
+    <p>${s.record ? (s.prev ? L(`🏅 Nouveau record en ${s.time} s ! (avant : ${s.prev}) +20 ⭐`, `🏅 New ${s.time} s record! (before: ${s.prev}) +20 ⭐`) : L("🏅 Premier record établi !", "🏅 First record set!"))
+                  : L(`Record à battre (${s.time} s) : ${speedBest()[s.key]}`, `Record to beat (${s.time} s): ${speedBest()[s.key]}`)}</p>
     <p class="muted">${L(`Précision ${acc} % · meilleur combo 🔥 ${s.bestCombo} · ${s.wrong} erreur${s.wrong > 1 ? "s" : ""}`, `Accuracy ${acc}% · best combo 🔥 ${s.bestCombo} · ${s.wrong} mistake${s.wrong === 1 ? "" : "s"}`)}</p>
     ${s.levelUp ? `<p class="lvl-up">${L(`🎉 Niveau ${levelOf(learn.points)} atteint !`, `🎉 Level ${levelOf(learn.points)} reached!`)}</p>` : ""}
     <div class="cta-row">

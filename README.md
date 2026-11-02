@@ -12,7 +12,7 @@ Application web pour pratiquer le japonais (niveau débutant N5-N4) : conversati
 - **Particules** (dans Cartes) — 38 phrases à trous pour choisir la bonne particule (は・が・を, に・で・へ…, と・も・の・か…, ou tout mélangé), avec explication en français, audio, rōmaji et mémo des particules. +5 ⭐ par bonne réponse ; une erreur revient 3 phrases plus loin. Sur PC : touches 1-4 pour répondre, Entrée pour continuer
 - **Quiz** — 10 questions (hiragana, katakana ou vocabulaire). Points : 10 ⭐ par bonne réponse + bonus de série (jusqu'à +10), +50 ⭐ sans faute. Record par quiz, niveau tous les 200 ⭐
 - **Brute force (kana)** (dans Quiz) — un kana s'affiche, tu tapes sa lecture en rōmaji (ou en kana) : validation instantanée, une réponse fausse est signalée tout de suite avec la correction. Choix hiragana / katakana / les deux, et des lignes à inclure (あ, か, … dakuten, combinaisons). Chaque kana doit être réussi 3 fois pour être éliminé ; les ratés reviennent ~4 questions plus loin. Entrée = « je ne sais pas ». +2 ⭐ par bonne réponse, +30 ⭐ à la fin, puis révision libre possible. Inspiré de vedxyz.github.io/kana
-- **⚡ Jeu de vitesse** (dans Quiz) — 60 secondes pour enchaîner un maximum de bonnes réponses (hiragana, katakana, les deux mélangés ou vocabulaire). Une erreur coûte 3 s, 5 bonnes réponses d'affilée rapportent +2 s. 3 ⭐ par bonne réponse, +20 ⭐ pour un nouveau record. Sur PC : touches 1 à 4
+- **⚡ Jeu de vitesse** (dans Quiz) — contre la montre, durée au choix (30 s, 1 min, 1 min 30 ou 2 min ; un record par mode et par durée) pour enchaîner un maximum de bonnes réponses (hiragana, katakana, les deux mélangés ou vocabulaire). Une erreur coûte 3 s, 5 bonnes réponses d'affilée rapportent +2 s. 3 ⭐ par bonne réponse, +20 ⭐ pour un nouveau record. Sur PC : touches 1 à 4
 - **Points ⭐** — affichés en haut de l'écran ; on en gagne aussi avec le mot du jour (+20 ⭐)
 
 Sur téléphone, l'interface passe en mode « menu de jeu » : barre d'onglets en bas, gros boutons en relief.
@@ -107,4 +107,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v19` → `kaiwa-v20` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v20` → `kaiwa-v21` dans `sw.js` pour forcer la mise à jour sur le téléphone.
