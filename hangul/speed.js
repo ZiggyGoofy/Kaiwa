@@ -10,7 +10,9 @@ const SPEED_TIMES = [
 ];
 const speedTime = () => (SPEED_TIMES.some((x) => x.t === learn.speedTime) ? learn.speedTime : 60);
 // clé du record : "jamo" pour 60 s, "jamo:30" sinon
-const speedKey = (mode, t) => (t === 60 ? mode : `${mode}:${t}`);
+const speedKey = (mode, t) => (t === 60 ? mode : `${mode}:${t}`) + (speedTyped() ? ":t" : "");
+// façon de répondre : "choice" = cliquer sur une des 4 réponses, "type" = écrire la réponse (record séparé)
+const speedTyped = () => learn.speedInput === "type";
 const SPEED_PENALTY = 3, SPEED_BONUS = 2, SPEED_BONUS_EVERY = 5;
 const SPEED_MODES = {
   jamo: { title: L("Lettres (jamo)", "Letters (jamo)"), icon: "ㄱ", desc: L("Trouve le son de la lettre", "Find the letter's sound") },
@@ -36,6 +38,11 @@ function renderSpeedSetup() {
     <div class="sp-times">${SPEED_TIMES.map((x) => `
       <button class="sp-tbtn ${x.t === T ? "on" : ""}" data-t="${x.t}"><b>${x.t % 60 ? x.t + " s" : x.t / 60 + " min"}</b><small>${x.icon} ${x.label}</small></button>`).join("")}
     </div>
+    <h3 class="sec">✍️ ${L("Réponses", "Answers")}</h3>
+    <div class="seg sp-input">
+      <button data-in="choice" class="${speedTyped() ? "" : "on"}">🖱️ ${L("Choisir parmi 4", "Pick from 4")}</button>
+      <button data-in="type" class="${speedTyped() ? "on" : ""}">⌨️ ${L("Écrire", "Type")}</button>
+    </div>
     <h3 class="sec">${L("Mode", "Mode")}</h3>
     <div class="mode-list">${Object.entries(SPEED_MODES).map(([k, m]) => `
       <button class="mode" data-k="${k}">
@@ -45,10 +52,11 @@ function renderSpeedSetup() {
       </button>`).join("")}
     </div>
     <p class="cal-help">${L(
-      `⏱ ${T} s au départ · ❌ une erreur coûte ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} bonnes réponses d'affilée = +${SPEED_BONUS} s. Sur PC : touches 1 à 4.`,
-      `⏱ ${T} s to start · ❌ a mistake costs ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} right answers in a row = +${SPEED_BONUS} s. On PC: keys 1 to 4.`)}</p>`;
+      `⏱ ${T} s au départ · ❌ une erreur coûte ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} bonnes réponses d'affilée = +${SPEED_BONUS} s. `,
+      `⏱ ${T} s to start · ❌ a mistake costs ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} right answers in a row = +${SPEED_BONUS} s. `)}${speedTyped() ? SPEED_TYPE_HELP : L("Sur PC : touches 1 à 4.", "On PC: keys 1 to 4.")}</p>`;
   $("spBack").onclick = () => renderQuizHome();
   document.querySelectorAll("#view-quiz .sp-tbtn").forEach((b) => (b.onclick = () => { learn.speedTime = +b.dataset.t; saveLearn(); renderSpeedSetup(); }));
+  document.querySelectorAll("#view-quiz .sp-input button").forEach((b) => (b.onclick = () => { learn.speedInput = b.dataset.in; saveLearn(); renderSpeedSetup(); }));
   document.querySelectorAll("#view-quiz .mode[data-k]").forEach((b) => (b.onclick = () => startSpeed(b.dataset.k)));
 }
 
@@ -56,7 +64,7 @@ function renderSpeedSetup() {
 function startSpeed(mode) {
   speedScreen = "game";
   const T = speedTime();
-  speed = { mode, time: T, key: speedKey(mode, T), pool: speedPool(mode), score: 0, wrong: 0, combo: 0, bestCombo: 0, q: null, lock: true, endAt: 0, timer: null };
+  speed = { mode, time: T, typed: speedTyped(), key: speedKey(mode, T), pool: speedPool(mode), score: 0, wrong: 0, combo: 0, bestCombo: 0, q: null, lock: true, endAt: 0, timer: null };
   $("view-quiz").innerHTML = `
     <div class="quiz-head">
       <button class="btn small" id="spQuit">✕</button>
@@ -69,8 +77,23 @@ function startSpeed(mode) {
       <span class="muted">🏅 ${speedBest()[speed.key] || 0}</span>
     </div>
     <div class="quiz-q sp-q" id="spQ"><div class="big-ja" lang="ko" id="spText"></div><span class="sp-float" id="spFloat"></span></div>
-    <div class="options" id="spOpts"></div>`;
+    ${speed.typed ? `
+    <div class="sp-type">
+      <input id="spInput" class="bf-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="${esc(SPEED_TYPE_PH())}">
+      <div class="bf-feedback" id="spFeedback">&nbsp;</div>
+      <button class="btn small" id="spSkip">${L("Je ne sais pas ⏎", "I don't know ⏎")}</button>
+    </div>` : `<div class="options" id="spOpts"></div>`}`;
   $("spQuit").onclick = () => { stopSpeed(); renderSpeedSetup(); };
+  if (speed.typed) {
+    const inp = $("spInput");
+    let composing = false;
+    inp.addEventListener("compositionstart", () => (composing = true));
+    inp.addEventListener("compositionend", () => { composing = false; checkTyped(false); });
+    inp.addEventListener("input", (e) => { if (!e.isComposing) composing = false; if (!composing) checkTyped(false); });
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing && !composing) { e.preventDefault(); checkTyped(true); } });
+    $("spSkip").onclick = () => { failTyped(); inp.focus(); };
+    setTimeout(() => inp.focus(), 50);
+  }
   // compte à rebours 3, 2, 1
   let n = 3;
   const count = () => {
@@ -94,38 +117,75 @@ function nextSpeed() {
   $("spQ").classList.remove("good", "bad");
   $("spText").innerHTML = esc(s.q.q);
   $("spText").classList.toggle("jamo", isJamo(s.q.q));
+  if (s.typed) {
+    s.accept = speedAccept(s.q);
+    $("spInput").value = ""; $("spInput").classList.remove("bad");
+    $("spFeedback").innerHTML = "&nbsp;";
+    $("spInput").focus();
+    return;
+  }
   $("spOpts").innerHTML = s.q.options.map((o, i) => `<button class="opt" data-i="${i}">${esc(o)}</button>`).join("");
   $("spOpts").querySelectorAll(".opt").forEach((b) => (b.onclick = () => answerSpeed(+b.dataset.i)));
 }
+
+// ---------- Réponses écrites ----------
+// Normalise une réponse : minuscules, sans accents, sans parenthèses, sans article ni « to » au début
+const spFold = (x) => String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const normAnswer = (x) => spFold(x).replace(/\(.*?\)/g, " ").replace(/[’']/g, "'")
+  .replace(/^\s*(to|the|an?|les?|la|l'|une?|des|du|de la|de|se|s')\s*(?=\S)/, "").replace(/^l'/, "")
+  .replace(/[^a-z0-9'\-\s\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7a3\u3131-\u318e]/g, " ").replace(/\s+/g, " ").trim();
+// « pays, nation » / « matin / petit-déjeuner » → chaque sens accepté séparément
+function meaningSet(list) {
+  const out = new Set();
+  for (const m of [].concat(list)) for (const part of [m, ...String(m).split(/[,;/]|\bou\b|\bor\b/)]) { const n = normAnswer(part); if (n) out.add(n); }
+  return out;
+}
+function okTyped(raw) {
+  const a = speed.accept, r = raw.normalize("NFC").trim();
+  if (!r) return false;
+  return a.ok(r);
+}
+function checkTyped(enter) {
+  const s = speed;
+  if (!s || s.lock || !s.accept) return;
+  const raw = $("spInput").value;
+  if (okTyped(raw)) return answerSpeed(true);
+  if (enter) return failTyped();
+  // lettres/kana : une réponse fausse « complète » est refusée tout de suite (comme le Brute force)
+  if (s.accept.wholeWrong && s.accept.wholeWrong(raw.normalize("NFC").trim().toLowerCase())) failTyped();
+}
+function failTyped() { if (speed && !speed.lock) answerSpeed(false); }
 
 function floatMsg(txt, cls) {
   const f = $("spFloat"); if (!f) return;
   f.textContent = txt; f.className = "sp-float " + cls; void f.offsetWidth; f.classList.add("show");
 }
 
+// i = numéro du bouton cliqué (mode choix) ou true/false (mode écrit)
 function answerSpeed(i) {
   const s = speed;
   if (!s || s.lock) return;
   s.lock = true;
-  const pick = s.q.options[i], ok = pick === s.q.a;
-  const btns = $("spOpts").querySelectorAll(".opt");
+  const ok = s.typed ? i === true : s.q.options[i] === s.q.a;
+  const btns = s.typed ? [] : $("spOpts").querySelectorAll(".opt");
   if (ok) {
     s.score++; s.combo++; s.bestCombo = Math.max(s.bestCombo, s.combo);
-    btns[i].classList.add("right");
+    if (s.typed) $("spFeedback").innerHTML = `<span class="bf-good">✓ ${esc(s.q.a)}</span>`;
+    else btns[i].classList.add("right");
     $("spQ").classList.add("good");
     if (s.combo % SPEED_BONUS_EVERY === 0) { s.endAt += SPEED_BONUS * 1000; floatMsg(`+${SPEED_BONUS} s`, "plus"); }
     else floatMsg("+1", "plus");
     updateSpeedStats();
-    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, 140);
+    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, s.typed ? 250 : 140);
   } else {
     s.wrong++; s.combo = 0;
     s.endAt -= SPEED_PENALTY * 1000;
-    btns[i].classList.add("wrong");
-    btns[s.q.options.indexOf(s.q.a)].classList.add("right");
+    if (s.typed) { $("spInput").classList.add("bad"); $("spFeedback").innerHTML = `<span class="bf-bad">${esc(s.q.q.replace(/\{([^|]+)\|[^}]+\}/g, "$1"))} = <b>${esc(s.q.a)}</b></span>`; }
+    else { btns[i].classList.add("wrong"); btns[s.q.options.indexOf(s.q.a)].classList.add("right"); }
     $("spQ").classList.add("bad");
     floatMsg(`-${SPEED_PENALTY} s`, "minus");
     updateSpeedStats(); tickSpeed();
-    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, 650);
+    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, s.typed ? 1100 : 650);
   }
 }
 
@@ -166,7 +226,7 @@ function renderSpeedEnd() {
   const s = speed, total = s.score + s.wrong, acc = total ? Math.round((s.score / total) * 100) : 0;
   $("view-quiz").innerHTML = `<div class="finish">
     <div class="finish-icon">⚡</div>
-    <p class="muted">${SPEED_MODES[s.mode].title} · ${s.time} s</p>
+    <p class="muted">${SPEED_MODES[s.mode].title} · ${s.time} s · ${s.typed ? L("⌨️ écrit", "⌨️ typed") : L("🖱️ choix", "🖱️ choice")}</p>
     <h2>${s.score} ${P(s.score, "bonne réponse", "bonnes réponses", "right answer", "right answers")}</h2>
     <div class="points-won">+${s.pts} ⭐</div>
     <p>${s.record ? (s.prev ? L(`🏅 Nouveau record en ${s.time} s ! (avant : ${s.prev}) +20 ⭐`, `🏅 New ${s.time} s record! (before: ${s.prev}) +20 ⭐`) : L("🏅 Premier record établi !", "🏅 First record set!"))
@@ -186,7 +246,7 @@ function openSpeed() { bf = null; quiz = null; renderSpeedSetup(); }
 // raccourcis clavier : 1 à 4
 document.addEventListener("keydown", (e) => {
   if (speedScreen !== "game" || document.body.dataset.view !== "quiz" || e.target.matches("input, textarea, select")) return;
-  if (/^[1-4]$/.test(e.key)) answerSpeed(+e.key - 1);
+  if (!speed?.typed && /^[1-4]$/.test(e.key)) answerSpeed(+e.key - 1);
 });
 
 // l'accueil du quiz remet le jeu de vitesse à zéro ; l'onglet Quiz réaffiche l'écran du jeu en cours
@@ -198,3 +258,24 @@ renderers.quiz = function () {
   else if (speedScreen === "setup" || speedScreen === "game") renderSpeedSetup();
   else _speedRender();
 };
+
+// ---------- SpeedHangul : quelles réponses écrites accepter ----------
+const SPEED_TYPE_PH = () => (speed?.mode === "vocab" ? L("traduction…", "translation…") : L("romanisation", "romanization"));
+const SPEED_TYPE_HELP = L("Mode écrit : tape la romanisation (ㄱ = g, 가 = ga… ; ㅇ = ng) ; en vocabulaire, tape la traduction en français (ou la romanisation du mot). Entrée = valider / je ne sais pas.",
+  "Typing mode: type the romanization (ㄱ = g, 가 = ga…; ㅇ = ng); for vocabulary, type the English translation (or the word's romanization). Enter = check / I don't know.");
+function speedAccept(it) {
+  if (speed.mode === "vocab") {
+    const means = meaningSet(it.a), rom = spFold(it.sub || "").replace(/[^a-z]/g, "");
+    return { ok: (r) => means.has(normAnswer(r)) || r === it.q || (rom && spFold(r).replace(/[^a-z]/g, "") === rom) };
+  }
+  let answers;
+  if (isJamo(it.q)) answers = JAMO[it.q].answers;
+  else {
+    const code = it.q.charCodeAt(0) - 0xac00, c = Math.floor(code / 588), v = Math.floor((code % 588) / 28), r = romSyl(c, v);
+    answers = [r, ...(SYL_ALT[r] || [])];
+  }
+  return {
+    ok: (r) => answers.includes(r.toLowerCase().replace(/\s/g, "")) || r === it.q,
+    wholeWrong: (r) => (BF_ALL_ROMAJI.has(r) && !answers.some((a) => a.startsWith(r))) || /^[가-힣]$/.test(r),
+  };
+}

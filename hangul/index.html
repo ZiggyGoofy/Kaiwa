@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="fr" data-app="hangul">
 <head>
+  <script>try { var t = localStorage.getItem("kaiwa-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
   <script>try { if (localStorage.getItem("kaiwa-app") === "kaiwa") location.replace("../"); } catch (e) {}</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -89,6 +90,13 @@
         <select id="appSelect">
           <option value="kaiwa" data-i18n="optKaiwa">会話 Kaiwa — japonais</option>
           <option value="hangul" data-i18n="optHangul">한글 SpeedHangul — coréen</option>
+        </select>
+      </label>
+      <label><span data-i18n="themeLabel">Thème</span>
+        <select id="themeSelect">
+          <option value="" data-i18n="themeAuto">Par défaut</option>
+          <option value="light" data-i18n="themeLight">☀️ Clair</option>
+          <option value="dark" data-i18n="themeDark">🌙 Sombre</option>
         </select>
       </label>
       <label><span data-i18n="language">Langue</span>

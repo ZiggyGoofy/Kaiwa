@@ -539,6 +539,7 @@ $("langDialog").addEventListener("cancel", (e) => e.preventDefault()); // on doi
 if (!LANG_CHOSEN) $("langDialog").showModal();
 else if (!appChosen()) showAppChooser(); // puis, une seule fois : Kaiwa ou SpeedHangul ?
 initAppSelect();
+initThemeSelect();
 // nettoie un éventuel tour inachevé (fermeture pendant une requête)
 if (state.messages.at(-1)?.role === "user") state.messages.pop();
 render();

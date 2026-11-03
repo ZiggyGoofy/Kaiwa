@@ -541,6 +541,7 @@ $("langDialog").addEventListener("cancel", (e) => e.preventDefault()); // on doi
 if (!LANG_CHOSEN) $("langDialog").showModal();
 else if (!appChosen()) showAppChooser();
 initAppSelect();
+initThemeSelect();
 $("btnTestVoice").onclick = () => { settings.rate = parseFloat($("rate").value); speak("안녕하세요! 반가워요."); };
 // nettoie un éventuel tour inachevé (fermeture pendant une requête)
 if (state.messages.at(-1)?.role === "user") state.messages.pop();

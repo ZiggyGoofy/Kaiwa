@@ -1,4 +1,4 @@
-// Choix de l'application : Kaiwa (japonais) ou SpeedHangul (coréen).
+// Choix de l'application (Kaiwa / SpeedHangul) et du thème (par défaut / clair / sombre), partagés par les deux apps.
 // Partagé par les deux apps (même site, donc même localStorage). Nécessite i18n.js (fonction L).
 // La page indique laquelle elle est avec <html data-app="kaiwa"> ou <html data-app="hangul">.
 
@@ -41,4 +41,17 @@ function initAppSelect() {
   if (!s) return;
   s.value = APP_HERE;
   s.onchange = () => setApp(s.value);
+}
+
+// ---------- Thème : "" = par défaut (comme avant), "light" = clair, "dark" = sombre ----------
+const THEME_KEY = "kaiwa-theme";
+function applyTheme(t) {
+  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+  else delete document.documentElement.dataset.theme;
+}
+function initThemeSelect() {
+  const s = document.getElementById("themeSelect");
+  if (!s) return;
+  try { s.value = localStorage.getItem(THEME_KEY) || ""; } catch {}
+  s.onchange = () => { try { localStorage.setItem(THEME_KEY, s.value); } catch {} applyTheme(s.value); };
 }

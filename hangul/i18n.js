@@ -26,7 +26,7 @@ const STATIC_EN = {
   ai: "Artificial intelligence", apiKey: "API key", keyLocal: "The key stays on this device only.", model: "Model",
   otherModel: "Other model (optional)", otherModelPh: "exact model ID", autoSpeak: "Read replies aloud automatically (voice mode)",
   autoSend: "Send automatically after dictation", tNew: "New conversation", tMic: "Speak (Korean)", tSend: "Send",
-  settings: "Settings", appLabel: "App", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", voiceRate: "Voice speed:", testVoice: "🔊 Test the voice",
+  settings: "Settings", appLabel: "App", themeLabel: "Theme", themeAuto: "Default", themeLight: "☀️ Light", themeDark: "🌙 Dark", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", voiceRate: "Voice speed:", testVoice: "🔊 Test the voice",
   voiceHelp: "No Korean voice? On Windows: Settings → Time & language → Language → add Korean (with text-to-speech).",
   close: "Close", tRomaji: "Show romanization", tSettings: "Settings", tPoints: "Your points", tClose: "Close",
 };

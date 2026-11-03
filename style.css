@@ -20,7 +20,7 @@
   --b-red: #f0524f; --b-red-d: #b22a28;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #12161f; --panel: #1b2130; --ink: #e8e9ee; --muted: #9aa3b5;
     --user: #3a4a72; --bot: #1f2637; --border: #2c3447;
     --warn-bg: #3a2d17; --warn-border: #7a5a24;
@@ -511,7 +511,7 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
    barre d'onglets en bas, boutons en relief, titres épais
    ===================================================== */
 @media (max-width: 700px) {
-  :root {
+  :root:not([data-theme="dark"]) { /* thème « jeu » clair, sauf si Sombre est choisi */
     --game-bg: #17306b;
     --game-bg2: #0c1b42;
     --panel: #f6f3ff;
@@ -831,3 +831,77 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .suggestions button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; border-radius: 16px; }
 .suggestions button small { margin-left: 0; }
 .sug-rom { font-size: .8rem; font-style: italic; font-weight: 500; color: var(--accent); }
+
+/* ============ Corrections lisibles (clair, sombre, téléphone) ============ */
+/* carte de la couleur du fond des panneaux, liseré rouge à gauche : le texte garde toujours la couleur normale */
+.correction {
+  background: var(--panel); color: var(--ink); border: 2px solid var(--corr); border-left-width: 6px;
+  border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,.12);
+}
+.correction .label { color: var(--corr-ink); font-weight: 800; }
+.correction .fixed { color: var(--ink); font-weight: 700; }
+.correction.good { background: transparent; border: none; box-shadow: none; color: var(--ok); }
+:root { --corr: #e84a47; --corr-ink: #c62f2c; }
+
+/* ============ Thème sombre (⚙ Réglages → Thème) ============ */
+/* Par défaut : comme avant. Clair : toujours clair. Sombre : toujours sombre, sur PC et sur téléphone. */
+:root[data-theme="dark"] {
+  --bg: #12161f; --panel: #1b2130; --ink: #e8e9ee; --muted: #9aa3b5;
+  --user: #3a4a72; --bot: #1f2637; --border: #2c3447;
+  --warn-bg: #3a2d17; --warn-border: #7a5a24;
+  --corr: #ff7a77; --corr-ink: #ff9d9a; --ok: #5fd37a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --corr-ink: #ff9d9a; --corr: #ff7a77; } }
+:root[data-theme="light"] { color-scheme: light; }
+
+@media (max-width: 700px) {
+  /* téléphone, thème par défaut : cartes claires → correction en encre foncée */
+  :root:not([data-theme="dark"]) { --corr: #e84a47; --corr-ink: #c62f2c; --ok: #8bf08f; }
+  :root[data-theme="dark"] {
+    --game-bg: #0f1a3d; --game-bg2: #050a1c;
+    --panel: #222b4d; --ink: #eef1ff; --muted: #a9b4dc; --border: #3a4677; --bg: #18213d; --bot: #252f55; --user: #2f5fd0;
+  }
+  /* cartes, boutons et cases : fond bleu nuit au lieu du blanc */
+  /* :where() = priorité faible : les états (bonne/mauvaise réponse, sélection…) gardent la main */
+  html[data-theme="dark"] :where(.kana, .mode, .face, .quiz-q, .opt, .phrase, .level-card, .stat, .cal, .memo, .part-card, .why, .bf-card,
+    .kj, .builder, .syl-cell, .sp-tbtn, .chips button, .lang-btn, .cal-day, .wotd, .deck, .bf-row,
+    .kj-search, .bf-input, .bd-selects select, .stamp, .card-ex) {
+    background: linear-gradient(180deg, #2a3561, #1f2850); color: var(--ink);
+  }
+  html[data-theme="dark"] :where(.kana, .mode, .opt, .kj, .syl-cell, .sp-tbtn, .chips button, .deck, .bf-row, .phrase, .stat, .lang-btn) :where(small, .muted, .deck-count) { color: var(--muted); }
+  [data-theme="dark"] :is(.example) { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+  [data-theme="dark"] .deck { background: linear-gradient(180deg, #3b5fae 0, #3b5fae 46%, #222b4d 46%); }
+  [data-theme="dark"] .deck.done { background: linear-gradient(180deg, #c99a1c 0, #c99a1c 46%, #3a3420 46%); }
+  [data-theme="dark"] .deck-icon { background: #18213d; color: #fff; }
+  [data-theme="dark"] .face.back { background: linear-gradient(180deg, #2f3150, #3a3420); }
+  [data-theme="dark"] .wotd { background: linear-gradient(180deg, #2f3150, #3a3420); }
+  [data-theme="dark"] .wotd.is-learned, [data-theme="dark"] .part-card.good, [data-theme="dark"] .quiz-q.good { background: linear-gradient(180deg, #1f4a33, #17382a); }
+  [data-theme="dark"] .part-card.bad, [data-theme="dark"] .quiz-q.bad { background: linear-gradient(180deg, #4d2328, #3a1b20); }
+  [data-theme="dark"] .opt.right { background: linear-gradient(180deg, #4fbf5c, #2f8f3c); color: #fff; }
+  [data-theme="dark"] .opt.wrong { background: linear-gradient(180deg, #e8605d, #b83a37); color: #fff; }
+  [data-theme="dark"] .opt.dim { opacity: .45; }
+  [data-theme="dark"] .chips button.on, [data-theme="dark"] .sp-tbtn.on { background: linear-gradient(180deg, #ffe07a, #ffbf1f); color: #4a2a00; }
+  [data-theme="dark"] .sp-tbtn.on small { color: #6b4a00; }
+  [data-theme="dark"] .bf-row.on { background: linear-gradient(180deg, #4fbf5c, #2f8f3c); color: #fff; }
+  [data-theme="dark"] .bf-mode { background: linear-gradient(90deg, #3a3420, #4a3c18); }
+  [data-theme="dark"] .speed-mode { background: linear-gradient(90deg, #40301f, #5a3a14); }
+  [data-theme="dark"] .cal-day.learned { background: linear-gradient(180deg, #4fbf5c, #2f8f3c); }
+  [data-theme="dark"] .cal-day.today { background: linear-gradient(180deg, #8a6a12, #6a4f0a); }
+  [data-theme="dark"] .cal-day.locked { background: #1a2140; }
+  [data-theme="dark"] .cal-day.sel { outline: 3px solid #ffe07a; }
+  [data-theme="dark"] .kj-badge, [data-theme="dark"] .face .kj-badge { background: rgba(255,255,255,.1); color: #c8d0f0; }
+  [data-theme="dark"] .kj-badge.jl { background: var(--b-gold); color: #4a2a00; }
+  [data-theme="dark"] .bd-help, [data-theme="dark"] .kj small, [data-theme="dark"] .sp-tbtn small { color: var(--muted); }
+  [data-theme="dark"] .blank { color: #9cc4ff; border-color: #9cc4ff; }
+  [data-theme="dark"] .msg .romaji, [data-theme="dark"] .welcome { color: #c8d4ff; }
+  [data-theme="dark"] .translation { color: #dbe3ff; }
+  [data-theme="dark"] .lang-dialog, [data-theme="dark"] dialog#settings { background: #1f2850; color: var(--ink); }
+  [data-theme="dark"] .app-btn .app-logo { color: #dbe3ff; }
+  [data-theme="dark"] .app-btn small { color: var(--muted); }
+}
+
+/* jeu de vitesse : saisie */
+.sp-type { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.sp-type .bf-input { width: min(100%, 360px); }
+.sp-input { margin-bottom: 6px; }

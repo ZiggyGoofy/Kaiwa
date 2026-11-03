@@ -24,7 +24,7 @@ const STATIC_EN = {
   tabKana: "Kana", tabKanji: "Kanji", tabCards: "Cards", tabQuiz: "Quiz",
   theme: "Topic:", newConv: " New", wotd: "Word of the day",
   inputPh: "Write in Japanese (or in English if you're stuck)…",
-  settings: "Settings", appLabel: "App", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
+  settings: "Settings", appLabel: "App", themeLabel: "Theme", themeAuto: "Default", themeLight: "☀️ Light", themeDark: "🌙 Dark", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
   keyLocal: "The key stays on this device only.", model: "Model", otherModel: "Other model (optional)",
   otherModelPh: "exact model ID", autoSpeak: "Read replies aloud automatically (voice mode)",
   autoSend: "Send automatically after dictation", voiceRate: "Voice speed:", close: "Close",
