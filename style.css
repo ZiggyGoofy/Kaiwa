@@ -821,3 +821,5 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   .kj-grid { grid-template-columns: repeat(4, 1fr); }
   .kj-char { font-size: 4.6rem; }
 }
+.kj-sub { color: var(--muted); font-size: .95rem; margin-top: -6px; }
+.quiz-q .big-ja:lang(ja) { font-family: inherit; }

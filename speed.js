@@ -16,7 +16,7 @@ const SPEED_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la lecture du kana", "Find the kana's reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la lecture du kana", "Find the kana's reading") },
   mix: { title: "Hiragana + Katakana", icon: "あア", desc: L("Les deux mélangés", "Both mixed together") },
-  vocab: { title: L("Vocabulaire", "Vocabulary"), icon: "語", desc: L("Trouve la bonne traduction", "Find the right translation") },
+  kanji: { title: "Kanji", icon: "漢", desc: L("Trouve le sens du kanji", "Find the kanji's meaning") },
 };
 let speed = null;        // partie en cours
 let speedScreen = null;  // "setup" | "game" | "end" | null

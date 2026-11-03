@@ -721,9 +721,9 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------- Quiz ----------
-const QUIZ_LEN = 10;                    // vocabulaire : toujours 10 questions
+const QUIZ_LEN = 10;                    // longueur par défaut
 const QUIZ_LENS = [10, 30, 60, 90];     // hiragana / katakana : nombre de cartes au choix
-const isKanaQuiz = (mode) => mode === "hira" || mode === "kata";
+const isKanaQuiz = (mode) => mode === "hira" || mode === "kata" || mode === "kanji"; // nombre de cartes au choix
 const quizLen = () => (QUIZ_LENS.includes(learn.quizLen) ? learn.quizLen : 10);
 // clé du record : "hira" pour 10 cartes (compatible avec les anciens records), "hira:30" sinon
 const quizKey = (mode, n) => (isKanaQuiz(mode) && n !== 10 ? `${mode}:${n}` : mode);
@@ -735,7 +735,7 @@ function streakBonus(n) {
 const QUIZ_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la bonne lecture", "Find the right reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la bonne lecture", "Find the right reading") },
-  vocab: { title: L("Vocabulaire", "Vocabulary"), icon: "語", desc: L("Trouve la bonne traduction", "Find the right translation") },
+  kanji: { title: "Kanji", icon: "漢", desc: L("Trouve le sens du kanji (500 kanji)", "Find the kanji's meaning (500 kanji)") },
 };
 let quiz = null;
 
@@ -752,7 +752,7 @@ function renderQuizHome() {
         <span class="muted">${L(`${LEVEL_STEP - (learn.points % LEVEL_STEP)} points avant le niveau ${levelOf(learn.points) + 1}`, `${LEVEL_STEP - (learn.points % LEVEL_STEP)} points to level ${levelOf(learn.points) + 1}`)}</span>
       </div>
     </div>
-    <h3 class="sec">🃏 ${L("Nombre de cartes (hiragana / katakana)", "Number of cards (hiragana / katakana)")}</h3>
+    <h3 class="sec">🃏 ${L("Nombre de cartes", "Number of cards")}</h3>
     <div class="seg q-lens">${QUIZ_LENS.map((n) => `<button data-len="${n}" class="${n === quizLen() ? "on" : ""}">${n}</button>`).join("")}</div>
     <div class="mode-list">${Object.entries(QUIZ_MODES).map(([k, m]) => {
       const n = isKanaQuiz(k) ? quizLen() : QUIZ_LEN, key = quizKey(k, n);
@@ -786,6 +786,9 @@ function stars(score, total = QUIZ_LEN) {
 
 function quizPool(mode) {
   if (mode === "vocab") return Object.values(VOCAB).flatMap((c) => c.items.map(([ja, romaji, fr]) => ({ q: ja, a: fr, say: toPlain(ja), sub: romaji })));
+  // kanji → sens ; après la réponse : lectures + mot d'exemple (lu à voix haute)
+  if (mode === "kanji") return KANJI.map((k) => ({ q: k[0], a: kjMeaning(k), say: k[8], kj: true,
+    sub: `${[...k[3], ...k[4]].slice(0, 3).join("、")} · ${toPlain(k[7])} (${k[8]}) = ${L(k[9], k[10])}` }));
   return [...KANA_ROWS, ...KANA_DAKUTEN].flat().filter(Boolean)
     .filter(([k]) => k !== "ぢ" && k !== "づ") // même lecture que じ / ず
     .map(([k, r]) => ({ q: kanaOf(k, mode), a: r, say: kanaOf(k, mode) }));
@@ -850,7 +853,7 @@ function renderQuestion() {
     </div>
     <div class="quiz-q ${a ? (a === q.a ? "good" : "bad") : ""}">
       <div class="big-ja" lang="ja">${toRuby(q.q)}</div>
-      ${a && q.sub ? `<div class="romaji">${esc(q.sub)}</div>` : ""}
+      ${a && q.sub ? `<div class="${q.kj ? "kj-sub" : "romaji"}" lang="ja">${esc(q.sub)}</div>` : ""}
       ${a && a === q.a ? `<span class="gain">+${z.gain}</span>` : ""}
       ${a && a === q.a && z.sbonus ? `<div class="streak-bonus">🔥 ${L(`Série de ${z.streak} !`, `${z.streak} in a row!`)} <b>+${z.sbonus} ⭐</b></div>` : ""}
     </div>
