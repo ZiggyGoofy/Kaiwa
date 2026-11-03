@@ -629,7 +629,17 @@ document.addEventListener("keydown", (e) => {
 });
 
 // ---------- Quiz ----------
-const QUIZ_LEN = 10;
+const QUIZ_LEN = 10;                    // vocabulaire : toujours 10 questions
+const QUIZ_LENS = [10, 30, 60, 90];     // hiragana / katakana : nombre de cartes au choix
+const isKanaQuiz = (mode) => mode === "hira" || mode === "kata";
+const quizLen = () => (QUIZ_LENS.includes(learn.quizLen) ? learn.quizLen : 10);
+// clé du record : "hira" pour 10 cartes (compatible avec les anciens records), "hira:30" sinon
+const quizKey = (mode, n) => (isKanaQuiz(mode) && n !== 10 ? `${mode}:${n}` : mode);
+// bonus de série : paliers à 5, 10, 15, 20 bonnes réponses d'affilée, puis tous les 10
+function streakBonus(n) {
+  if (n % 5) return 0;
+  return { 5: 10, 10: 25, 15: 40, 20: 60 }[n] || (n % 10 === 0 ? 100 : 50);
+}
 const QUIZ_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la bonne lecture", "Find the right reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la bonne lecture", "Find the right reading") },
@@ -641,7 +651,7 @@ renderers.quiz = function () { quiz ? renderQuestion() : renderQuizHome(); };
 
 function renderQuizHome() {
   $("view-quiz").innerHTML = `
-    <div class="panel-title"><h2>Quiz</h2><p>${L(`${QUIZ_LEN} questions. Bonne réponse : 10 ⭐, plus un bonus de série. Sans faute : +50 ⭐ !`, `${QUIZ_LEN} questions. Right answer: 10 ⭐, plus a streak bonus. Perfect score: +50 ⭐!`)}</p></div>
+    <div class="panel-title"><h2>Quiz</h2><p>${L("Bonne réponse : 10 ⭐ (jusqu'à 20 ⭐ en série). 🔥 Bonus de série à 5, 10, 15, 20… bonnes réponses d'affilée. Sans faute : 5 ⭐ par carte en plus !", "Right answer: 10 ⭐ (up to 20 ⭐ on a streak). 🔥 Streak bonus at 5, 10, 15, 20… right answers in a row. Perfect score: 5 ⭐ per card on top!")}</p></div>
     <div class="level-card">
       <div class="lvl-badge"><small>${L("NIV.", "LVL")}</small>${levelOf(learn.points)}</div>
       <div class="lvl-info">
@@ -650,12 +660,17 @@ function renderQuizHome() {
         <span class="muted">${L(`${LEVEL_STEP - (learn.points % LEVEL_STEP)} points avant le niveau ${levelOf(learn.points) + 1}`, `${LEVEL_STEP - (learn.points % LEVEL_STEP)} points to level ${levelOf(learn.points) + 1}`)}</span>
       </div>
     </div>
-    <div class="mode-list">${Object.entries(QUIZ_MODES).map(([k, m]) => `
+    <h3 class="sec">🃏 ${L("Nombre de cartes (hiragana / katakana)", "Number of cards (hiragana / katakana)")}</h3>
+    <div class="seg q-lens">${QUIZ_LENS.map((n) => `<button data-len="${n}" class="${n === quizLen() ? "on" : ""}">${n}</button>`).join("")}</div>
+    <div class="mode-list">${Object.entries(QUIZ_MODES).map(([k, m]) => {
+      const n = isKanaQuiz(k) ? quizLen() : QUIZ_LEN, key = quizKey(k, n);
+      return `
       <button class="mode" data-k="${k}">
         <span class="deck-icon" lang="ja">${m.icon}</span>
-        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}</span></span>
-        <span class="best">${learn.best[k] != null ? `${stars(learn.best[k])}<br><small>${L("Record :", "Best:")} ${learn.bestPts[k] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
-      </button>`).join("")}
+        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc} · ${n} ${L("cartes", "cards")}</span></span>
+        <span class="best">${learn.best[key] != null ? `${stars(learn.best[key], n)}<br><small>${L("Record :", "Best:")} ${learn.bestPts[key] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
+      </button>`;
+    }).join("")}
       <button class="mode bf-mode" id="bfOpen">
         <span class="deck-icon">⌨️</span>
         <span><span class="deck-title">Brute force (kana)</span><span class="muted">${L("Tape la lecture de chaque kana · choisis lesquels", "Type each kana's reading · pick which ones")}</span></span>
@@ -667,12 +682,13 @@ function renderQuizHome() {
         <span class="best">⏱ 30 s – 2 min</span>
       </button></div>`;
   document.querySelectorAll(".mode[data-k]").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
+  document.querySelectorAll(".q-lens button").forEach((b) => (b.onclick = () => { learn.quizLen = +b.dataset.len; saveLearn(); renderQuizHome(); }));
   $("bfOpen").onclick = () => openBruteForce();
   $("speedOpen").onclick = () => openSpeed();
 }
 
-function stars(score) {
-  const n = score >= QUIZ_LEN ? 3 : score >= 7 ? 2 : score >= 4 ? 1 : 0;
+function stars(score, total = QUIZ_LEN) {
+  const r = score / total, n = r >= 1 ? 3 : r >= 0.7 ? 2 : r >= 0.4 ? 1 : 0;
   return "★".repeat(n) + "☆".repeat(3 - n);
 }
 
@@ -684,12 +700,19 @@ function quizPool(mode) {
 }
 
 function startQuiz(mode) {
-  const pool = quizPool(mode);
-  const qs = shuffle(pool).slice(0, QUIZ_LEN).map((item) => {
+  const pool = quizPool(mode), len = isKanaQuiz(mode) ? quizLen() : QUIZ_LEN;
+  // plus de cartes que de kana (ex. 90) : on refait un tour du paquet mélangé, sans répéter deux fois de suite
+  let list = [];
+  while (list.length < len) {
+    let round = shuffle(pool);
+    if (list.length && round[0] === list[list.length - 1]) round.push(round.shift());
+    list = list.concat(round);
+  }
+  const qs = list.slice(0, len).map((item) => {
     const wrong = shuffle([...new Set(pool.map((p) => p.a).filter((a) => a !== item.a))]).slice(0, 3);
     return { ...item, options: shuffle([item.a, ...wrong]) };
   });
-  quiz = { mode, qs, i: 0, score: 0, streak: 0, pts: 0, gain: 0, answered: null };
+  quiz = { mode, len, key: quizKey(mode, len), qs, i: 0, score: 0, streak: 0, bestStreak: 0, streakPts: 0, pts: 0, gain: 0, sbonus: 0, answered: null };
   renderQuestion();
 }
 
@@ -698,21 +721,22 @@ function renderQuestion() {
   if (z.i >= z.qs.length) {
     if (!z.finished) {
       z.finished = true;
-      z.bonus = z.score === QUIZ_LEN ? 50 : 0;
+      z.bonus = z.score === z.len ? z.len * 5 : 0;
       z.pts += z.bonus;
       z.levelUp = addPoints(z.pts);
-      z.prevPts = learn.bestPts[z.mode] ?? -1;
-      if (z.score > (learn.best[z.mode] ?? -1)) learn.best[z.mode] = z.score;
-      if (z.pts > z.prevPts) learn.bestPts[z.mode] = z.pts;
+      z.prevPts = learn.bestPts[z.key] ?? -1;
+      if (z.score > (learn.best[z.key] ?? -1)) learn.best[z.key] = z.score;
+      if (z.pts > z.prevPts) learn.bestPts[z.key] = z.pts;
       saveLearn();
     }
     const record = z.pts > z.prevPts && z.prevPts >= 0;
     v.innerHTML = `<div class="finish">
-      <div class="stars">${stars(z.score)}</div>
-      <h2>${z.score}/${QUIZ_LEN} ${L("bonnes réponses", "correct answers")}</h2>
+      <div class="stars">${stars(z.score, z.len)}</div>
+      <h2>${z.score}/${z.len} ${L("bonnes réponses", "correct answers")}</h2>
       <div class="points-won">+${z.pts} ⭐</div>
+      <p class="muted">🔥 ${L(`Meilleure série : ${z.bestStreak}`, `Best streak: ${z.bestStreak}`)}${z.streakPts ? ` · ${L(`bonus de série : +${z.streakPts} ⭐`, `streak bonus: +${z.streakPts} ⭐`)}` : ""}</p>
       ${z.bonus ? `<p>${L(`Dont +${z.bonus} ⭐ de bonus sans faute !`, `Including a +${z.bonus} ⭐ perfect-score bonus!`)}</p>` : ""}
-      <p>${record ? L("🏅 Nouveau record de points ! ", "🏅 New points record! ") : ""}${z.score === QUIZ_LEN ? L("Parfait !", "Perfect!") : z.score >= 7 ? L("Très bien !", "Great job!") : L("Continue, ça vient !", "Keep going, you're getting there!")}</p>
+      <p>${record ? L("🏅 Nouveau record de points ! ", "🏅 New points record! ") : ""}${z.score === z.len ? L("Parfait !", "Perfect!") : z.score / z.len >= 0.7 ? L("Très bien !", "Great job!") : L("Continue, ça vient !", "Keep going, you're getting there!")}</p>
       ${z.levelUp ? `<p class="lvl-up">${L(`🎉 Niveau ${levelOf(learn.points)} atteint !`, `🎉 Level ${levelOf(learn.points)} reached!`)}</p>` : ""}
       <p class="muted">${L("Total :", "Total:")} ${fmt(learn.points)} ⭐ · ${L("niveau", "level")} ${levelOf(learn.points)}</p>
       <div class="cta-row">
@@ -727,7 +751,8 @@ function renderQuestion() {
   v.innerHTML = `
     <div class="quiz-head">
       <button class="btn small" id="qQuit">✕</button>
-      <div class="bar big"><i style="width:${(z.i / QUIZ_LEN) * 100}%"></i></div>
+      <div class="bar big"><i style="width:${(z.i / z.len) * 100}%"></i></div>
+      <span class="q-count">${z.i + 1}/${z.len}</span>
       <span class="streak ${z.streak >= 3 ? "hot" : ""}">🔥 ${z.streak}</span>
       <span class="qpts">⭐ ${z.pts}</span>
     </div>
@@ -735,6 +760,7 @@ function renderQuestion() {
       <div class="big-ja" lang="ja">${toRuby(q.q)}</div>
       ${a && q.sub ? `<div class="romaji">${esc(q.sub)}</div>` : ""}
       ${a && a === q.a ? `<span class="gain">+${z.gain}</span>` : ""}
+      ${a && a === q.a && z.sbonus ? `<div class="streak-bonus">🔥 ${L(`Série de ${z.streak} !`, `${z.streak} in a row!`)} <b>+${z.sbonus} ⭐</b></div>` : ""}
     </div>
     <div class="options">${q.options.map((o) => {
       const cls = !a ? "" : o === q.a ? "right" : o === a ? "wrong" : "dim";
@@ -750,13 +776,16 @@ function renderQuestion() {
     z.answered = pick;
     speak(q.say);
     if (pick === q.a) {
-      z.score++; z.streak++;
-      z.gain = 10 + Math.min(z.streak - 1, 5) * 2; // bonus de série : jusqu'à +10
-      z.pts += z.gain;
+      z.score++; z.streak++; z.bestStreak = Math.max(z.bestStreak, z.streak);
+      z.gain = 10 + Math.min(z.streak - 1, 5) * 2; // chaque bonne réponse vaut plus en série : jusqu'à 20
+      z.sbonus = streakBonus(z.streak);            // gros bonus aux paliers 5, 10, 15, 20…
+      z.streakPts += z.sbonus;
+      z.pts += z.gain + z.sbonus;
       renderQuestion();
-      setTimeout(() => { if (quiz === z && z.answered) { z.i++; z.answered = null; renderQuestion(); } }, 900);
+      if (z.sbonus) pop(document.querySelector(".streak-bonus"));
+      setTimeout(() => { if (quiz === z && z.answered) { z.i++; z.answered = null; z.sbonus = 0; renderQuestion(); } }, z.sbonus ? 1400 : 900);
     } else {
-      z.streak = 0;
+      z.streak = 0; z.sbonus = 0;
       renderQuestion();
     }
   }));
