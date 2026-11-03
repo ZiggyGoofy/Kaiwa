@@ -1,4 +1,4 @@
-// Kaiwa — navigation et espace d'apprentissage hors ligne (Mot du jour, Kana, Phrases, Cartes, Quiz).
+// Kaiwa — navigation et espace d'apprentissage hors ligne (Mot du jour, Kana, Kanji, Cartes, Quiz).
 // Utilise les fonctions globales de app.js : $, esc, toRuby, toPlain, speak, newConversation, openSettings.
 
 const LEARN = "kaiwa-learn-v1";
@@ -41,25 +41,26 @@ function kanaItems(set) {
 const listItems = (src, key) => src[key].items.map(([ja, romaji, fr], i) => ({ id: String(i), ja, romaji, fr }));
 
 const DECKS = {};
-const GROUP_NAMES = { Kana: "Kana", Particules: L("Particules", "Particles"), Vocabulaire: L("Vocabulaire", "Vocabulary"), Calendrier: L("Calendrier", "Calendar"), Phrases: "Phrases" };
+const KJ_GROUP_SIZE = 50;
+const GROUP_NAMES = { Kana: "Kana", Particules: L("Particules", "Particles"), Vocabulaire: L("Vocabulaire", "Vocabulary"), Kanji: "Kanji" };
 DECKS["kana:hira"] = { group: "Kana", title: "Hiragana", icon: "あ", items: () => kanaItems("hira") };
 DECKS["kana:kata"] = { group: "Kana", title: "Katakana", icon: "ア", items: () => kanaItems("kata") };
 const particleItems = (k) => PARTICLES[k].items.map(([ja, answer, wrong, romaji, fr, why], i) => ({ id: k + i, ja, answer, wrong: wrong.split("|"), romaji, fr, why }));
 for (const k in PARTICLES) DECKS["part:" + k] = { group: "Particules", kind: "particle", title: PARTICLES[k].title, icon: PARTICLES[k].icon, items: () => particleItems(k) };
 DECKS["part:mix"] = { group: "Particules", kind: "particle", title: L("Tout mélangé", "All mixed"), icon: "🔀", items: () => Object.keys(PARTICLES).flatMap(particleItems) };
 const VOCAB_ICONS = { nombres: "一", temps: "日", nourriture: "食", lieux: "駅", verbes: "行", adjectifs: "大", personnes: "人", liaison: "話", questions: "何", quotidien: "生", verbes2: "会", adjectifs2: "好", reactions: "笑" };
-const PHRASE_ICONS = { essentiels: "👋", presentation: "🙋", cafe: "☕", courses: "🛍️", chemin: "🧭", loisirs: "🎮", journee: "🌅", voyage: "✈️" };
 for (const k in VOCAB) DECKS["vocab:" + k] = { group: "Vocabulaire", title: VOCAB[k].title, icon: VOCAB_ICONS[k] || "語", items: () => listItems(VOCAB, k) };
-DECKS["cal:mots"] = {
-  group: "Calendrier", title: L("Mes mots du jour", "My words of the day"), icon: "暦",
-  items: () => [...new Set(Object.keys(learn.days).map((k) => wordFor(fromKey(k))))].map(([ja, romaji, fr]) => ({ id: ja, ja, romaji, fr })),
-};
-for (const k in PHRASES) DECKS["phr:" + k] = { group: "Phrases", title: PHRASES[k].title, icon: PHRASE_ICONS[k] || "💬", items: () => listItems(PHRASES, k) };
+// Kanji : un paquet par groupe de 50 (du plus fréquent au moins fréquent)
+KANJI.forEach((k, i) => {
+  const g = Math.floor(i / KJ_GROUP_SIZE);
+  DECKS["kanji:" + g] ||= { group: "Kanji", kind: "kanji", title: `Kanji ${g * KJ_GROUP_SIZE + 1}–${Math.min(KANJI.length, (g + 1) * KJ_GROUP_SIZE)}`, icon: k[0],
+    items: () => KANJI.slice(g * KJ_GROUP_SIZE, (g + 1) * KJ_GROUP_SIZE).map((x) => ({ id: x[0], ja: x[0], kanji: x, romaji: "", fr: x[0] })) };
+});
 
 const knownSet = (deck) => new Set(learn.known[deck] || []);
 
 // ---------- Navigation ----------
-const VIEWS = ["chat", "kana", "phrases", "cards", "quiz"];
+const VIEWS = ["chat", "kana", "kanji", "cards", "quiz"];
 const renderers = {};
 function showView(name) {
   if (!VIEWS.includes(name)) name = "chat";
@@ -138,7 +139,7 @@ renderers.jour = function () {
         <button class="btn small" id="calNext" title="${L("Mois suivant", "Next month")}" ${atCurrentMonth ? "disabled" : ""}>›</button>
       </div>
       <div class="cal-grid">${cells}</div>
-      <p class="cal-help">${L("Touche un jour passé pour revoir son mot. Les jours ✓ sont ajoutés au paquet « Mes mots du jour » dans Cartes.", "Tap a past day to see its word again. Days marked ✓ are added to the \"My words of the day\" deck in Cards.")}</p>
+      <p class="cal-help">${L("Touche un jour passé pour revoir son mot. Les jours appris sont marqués ✓.", "Tap a past day to see its word again. Learned days are marked ✓.")}</p>
     </div>`;
 
   $("wSay").onclick = () => speak(toPlain(w[0]));
@@ -317,27 +318,107 @@ document.addEventListener("keydown", (e) => {
   });
 })();
 
-// ---------- Phrases ----------
-let phraseTheme = "essentiels";
-renderers.phrases = function () {
-  const v = $("view-phrases"), t = PHRASES[phraseTheme];
+// ---------- Kanji : les 500 plus fréquents ----------
+const KJ_GROUP = KJ_GROUP_SIZE; // groupes de 50, du plus fréquent au moins fréquent
+const kjGroups = () => Array.from({ length: Math.ceil(KANJI.length / KJ_GROUP) }, (_, g) => KANJI.slice(g * KJ_GROUP, (g + 1) * KJ_GROUP));
+const kjMeanings = (k) => L(k[6], k[5]);
+const kjMeaning = (k) => kjMeanings(k).slice(0, 2).join(", ");
+const kjRange = (g) => `${g * KJ_GROUP + 1}–${Math.min(KANJI.length, (g + 1) * KJ_GROUP)}`;
+// lecture en hiragana → rōmaji (pour le mot d'exemple)
+function kanaToRomaji(s) {
+  let out = "";
+  for (let i = 0; i < s.length; i++) {
+    const two = s.slice(i, i + 2);
+    if (KANA_ROMAJI[two]) { out += KANA_ROMAJI[two]; i++; continue; }
+    const c = s[i];
+    if (c === "っ") { const nx = KANA_ROMAJI[s.slice(i + 1, i + 3)] || KANA_ROMAJI[s[i + 1]] || ""; out += nx.startsWith("ch") ? "t" : nx[0] || ""; continue; }
+    if (c === "ー") { out += out.slice(-1); continue; }
+    out += c === "は" && i === s.length - 1 ? "wa" : KANA_ROMAJI[c] ?? c;
+  }
+  return out;
+}
+const fold = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+let kjFilter = { group: "all", q: "" };
+
+renderers.kanji = function () {
+  const v = $("view-kanji"), groups = kjGroups();
+  const known = new Set(groups.flatMap((_, g) => learn.known["kanji:" + g] || []));
   v.innerHTML = `
-    <div class="panel-title"><h2>${L("Phrases utiles", "Useful phrases")}</h2><p>${L("Écoute, répète à voix haute, puis entraîne-toi avec Sakura.", "Listen, repeat out loud, then practice with Sakura.")}</p></div>
-    <div class="chips">${Object.entries(PHRASES).map(([k, p]) => `<button data-k="${k}" class="${k === phraseTheme ? "on" : ""}">${esc(p.title)}</button>`).join("")}</div>
-    <div class="phrase-list">${t.items.map(([ja, ro, fr], i) => `
-      <div class="phrase">
-        <button class="say" data-i="${i}" title="${L("Écouter", "Listen")}">🔊</button>
-        <div><div class="ja" lang="ja">${toRuby(ja)}</div><div class="romaji">${esc(ro)}</div><div class="fr">${esc(fr)}</div></div>
-      </div>`).join("")}</div>
+    <div class="panel-title"><h2>Kanji 漢字</h2><p>${L(`Les ${KANJI.length} kanji les plus utilisés, du plus fréquent au moins fréquent. Touche un kanji pour voir sa fiche.`, `The ${KANJI.length} most used kanji, from most to least frequent. Tap a kanji to open its card.`)}</p></div>
+    <input type="search" id="kjSearch" class="kj-search" placeholder="${L("Chercher : sens, lecture, kanji…", "Search: meaning, reading, kanji…")}" value="${esc(kjFilter.q)}" autocomplete="off">
+    <div class="chips kj-chips">
+      <button data-g="all" class="${kjFilter.group === "all" ? "on" : ""}">${L("Tous", "All")}</button>
+      ${groups.map((grp, g) => `<button data-g="${g}" class="${String(g) === String(kjFilter.group) ? "on" : ""}">${kjRange(g)}</button>`).join("")}
+    </div>
+    <p class="kj-count muted" id="kjCount"></p>
+    <div class="kj-grid" id="kjGrid"></div>
     <div class="cta-row">
-      <button class="btn gold" id="phrSakura">🌸 ${L("Pratiquer ce thème avec Sakura", "Practice this topic with Sakura")}</button>
-      <button class="btn" id="phrCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
-    </div>`;
-  v.querySelectorAll(".chips button").forEach((b) => (b.onclick = () => { phraseTheme = b.dataset.k; renderers.phrases(); }));
-  v.querySelectorAll(".say").forEach((b) => (b.onclick = () => { speak(toPlain(t.items[b.dataset.i][0])); pop(b); }));
-  $("phrSakura").onclick = () => practiceWithSakura(phraseTheme);
-  $("phrCards").onclick = () => { showView("cards"); openDeck("phr:" + phraseTheme); };
+      <button class="btn gold" id="kjCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
+    </div>
+    <p class="cal-help">${L("Le point vert = kanji marqué « Je savais » dans les cartes. Sources : KANJIDIC2 et JMdict (EDRDG).", "Green dot = kanji marked \"I knew it\" in the cards. Sources: KANJIDIC2 and JMdict (EDRDG).")}</p>`;
+  const draw = () => {
+    const q = fold(kjFilter.q.trim());
+    const list = KANJI.map((k, i) => [k, i]).filter(([k, i]) => {
+      if (kjFilter.group !== "all" && Math.floor(i / KJ_GROUP) !== +kjFilter.group) return false;
+      if (!q) return true;
+      // japonais (kanji, lectures, mot d'exemple) : n'importe où ; sens : au début d'un mot (« eau » ≠ « bureau »)
+      const ja = [k[0], ...k[3], ...k[4], k[7].replace(/\{([^|]+)\|[^}]+\}/g, "$1"), k[8]].join(" ").replace(/・/g, "");
+      if (ja.includes(kjFilter.q.trim()) || ja.includes(toHiraChar(kjFilter.q.trim()))) return true;
+      const words = [...k[5], ...k[6], k[9], k[10]].map(fold).join(" ");
+      return new RegExp("(^|[^a-z0-9])" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(words);
+    });
+    $("kjCount").textContent = L(`${list.length} kanji`, `${list.length} kanji`);
+    $("kjGrid").innerHTML = list.map(([k, i]) => `<button class="kj ${known.has(k[0]) ? "known" : ""}" data-i="${i}"><b lang="ja">${k[0]}</b><small>${esc(kjMeanings(k)[0] || "")}</small></button>`).join("")
+      || `<p class="muted">${L("Aucun kanji trouvé.", "No kanji found.")}</p>`;
+    $("kjGrid").querySelectorAll(".kj").forEach((b) => (b.onclick = () => { pop(b); openKanji(+b.dataset.i, list.map(([, i]) => i)); }));
+  };
+  draw();
+  $("kjSearch").oninput = (e) => { kjFilter.q = e.target.value; draw(); };
+  v.querySelectorAll(".kj-chips button").forEach((b) => (b.onclick = () => { kjFilter.group = b.dataset.g; renderers.kanji(); }));
+  $("kjCards").onclick = () => { showView("cards"); openDeck("kanji:" + (kjFilter.group === "all" ? 0 : kjFilter.group)); };
 };
+
+// Fiche d'un kanji (même fenêtre que les kana, avec ‹ › pour passer au suivant)
+let kjList = [], kjPos = 0;
+function openKanji(i, list) {
+  kjList = list && list.length ? list : KANJI.map((_, j) => j);
+  kjPos = Math.max(0, kjList.indexOf(i));
+  renderKanjiDetail(true);
+  if (!$("kanaDialog").open) $("kanaDialog").showModal();
+}
+const kjBadges = (k, i) => `<span class="kj-badge">#${i + 1}</span>${k[2] ? `<span class="kj-badge jl">${k[2]}</span>` : ""}<span class="kj-badge">${k[1]} ${P(k[1], "trait", "traits", "stroke", "strokes")}</span>`;
+function kanjiReadings(k) {
+  return `${k[3].length ? `<div class="kj-read"><b>ON</b><span lang="ja">${esc(k[3].join("、"))}</span></div>` : ""}
+    ${k[4].length ? `<div class="kj-read"><b>KUN</b><span lang="ja">${esc(k[4].join("、"))}</span></div>` : ""}`;
+}
+function renderKanjiDetail(sayIt) {
+  const i = kjList[kjPos], k = KANJI[i];
+  $("kanaDetail").innerHTML = `
+    <div class="kj-top">${kjBadges(k, i)}</div>
+    <div class="kj-main">
+      <button class="kj-char" id="kjSay" lang="ja" title="${L("Écouter le mot d'exemple", "Listen to the example word")}">${k[0]}</button>
+      <div class="kj-info">
+        <div class="kj-mean">${esc(kjMeanings(k).join(", "))}</div>
+        ${kanjiReadings(k)}
+      </div>
+    </div>
+    <div class="kj-ex">
+      <div class="kj-ex-label">${L("Exemple", "Example")}</div>
+      <div class="kj-ex-word" lang="ja">${toRuby(k[7])}<button class="kd-say" id="kjSayEx" title="${L("Écouter", "Listen")}">🔊</button></div>
+      <div class="kj-ex-rom romaji">${esc(kanaToRomaji(k[8]))}</div>
+      <div class="kj-ex-tr">${esc(L(k[9], k[10]))}</div>
+    </div>
+    <div class="kd-navrow">
+      <button class="kd-nav" id="kdPrev" ${kjPos === 0 ? "disabled" : ""} title="${L("Précédent", "Previous")}">‹</button>
+      <span class="kd-count">${kjPos + 1} / ${kjList.length}</span>
+      <button class="kd-nav" id="kdNext" ${kjPos === kjList.length - 1 ? "disabled" : ""} title="${L("Suivant", "Next")}">›</button>
+    </div>`;
+  $("kjSay").onclick = () => { speak(k[8]); pop($("kjSay")); };
+  $("kjSayEx").onclick = () => speak(k[8]);
+  $("kdPrev").onclick = () => { if (kjPos > 0) { kjPos--; renderKanjiDetail(true); } };
+  $("kdNext").onclick = () => { if (kjPos < kjList.length - 1) { kjPos++; renderKanjiDetail(true); } };
+  if (sayIt) speak(k[8]);
+}
 
 // ---------- Cartes (flashcards) ----------
 let session = null; // { deck, items, queue, flipped, done }
@@ -462,6 +543,16 @@ function kanaExample(ch) {
 }
 
 function cardFaces(it) {
+  if (it.kanji) {
+    const k = it.kanji, i = KANJI.indexOf(k);
+    const big = `<div class="big-ja kj-card-char" lang="ja">${k[0]}</div>`;
+    const info = `<div class="kj-card-mean">${esc(kjMeaning(k))}</div>
+      <div class="kj-card-read">${kanjiReadings(k)}</div>
+      <div class="card-ex kj-card-ex"><div><div class="card-ex-kana" lang="ja">${toRuby(k[7])}</div><div class="card-ex-rom"><span class="romaji">${esc(kanaToRomaji(k[8]))} · </span>${esc(L(k[9], k[10]))}</div></div></div>`;
+    return learn.dir === "ja"
+      ? { front: big + `<div class="kj-top">${kjBadges(k, i)}</div>`, back: big + info }
+      : { front: `<div class="big-fr">${esc(kjMeaning(k))}</div><div class="kj-top">${kjBadges(k, i)}</div>`, back: big + info };
+  }
   const jaSide = `<div class="big-ja" lang="ja">${toRuby(it.ja)}</div>`;
   const kana = !it.fr;
   if (learn.dir === "ja") {
@@ -518,13 +609,14 @@ function renderCard() {
     </div>`;
   const flip = () => {
     if (s.flipped) return; s.flipped = true; renderCard();
+    if (it.kanji) return speak(it.kanji[8]);
     const ex = !it.fr && KANA_EX[it.ja];
     speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja));
   };
   $("flip").onclick = flip;
   $("flip").onkeydown = (e) => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); } };
   v.querySelectorAll(".face [data-say]").forEach((b) => (b.onclick = (e) => { e.stopPropagation(); speak(b.dataset.say); }));
-  $("cardSay").onclick = (e) => { e.stopPropagation(); const ex = !it.fr && KANA_EX[it.ja]; speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja)); };
+  $("cardSay").onclick = (e) => { e.stopPropagation(); if (it.kanji) return speak(it.kanji[8]); const ex = !it.fr && KANA_EX[it.ja]; speak(ex ? `${it.ja}、${unbracket(ex[0])}` : toPlain(it.ja)); };
   $("cardAgainOne").onclick = () => { s.queue.shift(); s.queue.splice(Math.min(3, s.queue.length), 0, it); s.flipped = false; renderCard(); };
   $("cardKnow").onclick = () => {
     const k = knownSet(s.deck); k.add(it.id); learn.known[s.deck] = [...k]; saveLearn();

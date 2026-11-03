@@ -7,8 +7,8 @@ Application web pour pratiquer le japonais (niveau débutant N5-N4) : conversati
 **Sans clé API (hors ligne)** :
 - **Mot du jour** (bouton doré 日 dans la barre de la page Sakura) — un mot par jour avec phrase d'exemple et audio, calendrier (✓ sur les jours appris, jours passés à rattraper), série de jours d'affilée. Pastille rouge tant que le mot du jour n'est pas appris
 - **Kana** — tableaux hiragana / katakana (base, dakuten, combinaisons). Touche un caractère pour ouvrir sa fiche : grand caractère, audio, **moyen mnémotechnique illustré** (le kana dessiné dans un objet dont le nom commence par son son, ex. あ sur un **A**vocat ; aussi au dos des cartes), mot d'exemple avec le kana surligné (ex. **と**もだち – tomodachi – ami), kanji, illustration et traduction. Flèches ou balayage pour passer au suivant
-- **Phrases** — 8 thèmes de phrases utiles avec audio, et bouton « Pratiquer avec Sakura »
-- **Cartes** — flashcards qui se retournent (kana, 13 catégories de vocabulaire, phrases). Pour les kana, on choisit d'abord les lignes du tableau à réviser (あ, か, … dakuten, combinaisons), avec la progression de chaque ligne, sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
+- **Kanji** (remplace l'ancien onglet Phrases) — les 500 kanji les plus utilisés (classement de fréquence KANJIDIC2), par groupes de 50, avec recherche par sens, lecture ou kanji. Chaque fiche : rang, niveau JLPT, nombre de traits, lectures on/kun, sens en français ou anglais, mot d'exemple avec furigana, rōmaji, traduction et audio. Flèches ou balayage pour passer au suivant
+- **Cartes** — flashcards qui se retournent (kana, particules, 13 catégories de vocabulaire, et 10 paquets de kanji de 50 : le kanji d'un côté, sens + lectures + mot d'exemple de l'autre). Pour les kana, on choisit d'abord les lignes du tableau à réviser (あ, か, … dakuten, combinaisons), avec la progression de chaque ligne, sens JA→FR ou FR→JA, progression sauvegardée. Sur PC : espace = retourner, ← = à revoir, → = je savais
 - **Particules** (dans Cartes) — 38 phrases à trous pour choisir la bonne particule (は・が・を, に・で・へ…, と・も・の・か…, ou tout mélangé), avec explication en français, audio, rōmaji et mémo des particules. +5 ⭐ par bonne réponse ; une erreur revient 3 phrases plus loin. Sur PC : touches 1-4 pour répondre, Entrée pour continuer
 - **Quiz** — hiragana ou katakana en 10, 30, 60 ou 90 cartes (au choix), vocabulaire en 10 questions. Points : 10 ⭐ par bonne réponse (jusqu'à 20 ⭐ en série), 🔥 bonus de série à 5 (+10), 10 (+25), 15 (+40), 20 (+60) bonnes réponses d'affilée puis +50/+100 toutes les 5, et 5 ⭐ par carte en plus sans faute. Record par quiz et par nombre de cartes, niveau tous les 200 ⭐
 - **Brute force (kana)** (dans Quiz) — un kana s'affiche, tu tapes sa lecture en rōmaji (ou en kana) : validation instantanée, une réponse fausse est signalée tout de suite avec la correction. Choix hiragana / katakana / les deux, et des lignes à inclure (あ, か, … dakuten, combinaisons). Chaque kana doit être réussi 3 fois pour être éliminé ; les ratés reviennent ~4 questions plus loin. Entrée = « je ne sais pas ». +2 ⭐ par bonne réponse, +30 ⭐ à la fin, puis révision libre possible. Inspiré de vedxyz.github.io/kana
@@ -104,6 +104,7 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - `i18n.js` — choix de la langue (français / anglais)
 - `content-en.js` — traductions anglaises du contenu (même ordre que `content.js`)
 - `content.js` — tout le contenu : kana, phrases, vocabulaire, mots du jour (facile à compléter)
+- `kanji.js` — les 500 kanji (lectures et sens : KANJIDIC2 / JMdict de l'EDRDG, licence CC BY-SA 4.0 ; niveaux JLPT : tanos.co.uk)
 - `learn.js` — onglets, mot du jour, kana, cartes, quiz et points
 - `bruteforce.js` — le quiz Brute force des kana
 - `speed.js` — le jeu de vitesse
@@ -122,4 +123,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v22` → `kaiwa-v23` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v23` → `kaiwa-v24` dans `sw.js` pour forcer la mise à jour sur le téléphone.

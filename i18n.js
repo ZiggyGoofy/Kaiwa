@@ -21,7 +21,7 @@ function setLang(lang) {
 
 // Textes fixes de index.html (attributs data-i18n, data-i18n-title, data-i18n-ph)
 const STATIC_EN = {
-  tabKana: "Kana", tabPhrases: "Phrases", tabCards: "Cards", tabQuiz: "Quiz",
+  tabKana: "Kana", tabKanji: "Kanji", tabCards: "Cards", tabQuiz: "Quiz",
   theme: "Topic:", newConv: " New", wotd: "Word of the day",
   inputPh: "Write in Japanese (or in English if you're stuck)…",
   settings: "Settings", appLabel: "App", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
