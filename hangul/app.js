@@ -76,11 +76,11 @@ Format :
 - "reply" : ta réponse en hangeul uniquement.
 - "romaji" : romanisation révisée (Revised Romanization) complète de ta réponse, telle qu'elle se prononce, en lettres latines.
 - "translation_fr" : traduction naturelle de ta réponse en ${LEARNER_LANG} (c'est TOI, Jiwoo, qui parles).
-- "suggestions" : 2 réponses courtes que l'apprenant pourrait donner à TA question, à la 1re personne (lui qui parle), en hangeul (champ "ko"), avec traduction en ${LEARNER_LANG} (champ "fr").
+- "suggestions" : 2 réponses courtes que l'apprenant pourrait donner à TA question, à la 1re personne (lui qui parle), en hangeul (champ "ko"), avec leur romanisation révisée complète (champ "romaji") et leur traduction en ${LEARNER_LANG} (champ "fr").
 
 Exemple. Message de l'apprenant : « annyeonghaseyo! jeoeun Pasidi ieyo. peurangseu saram »
 Bonne réponse :
-{"correction":{"has_error":true,"corrected":"안녕하세요! 저는 파시디예요. 프랑스 사람이에요.","explanation_fr":"Après une voyelle, la particule de thème est 는 (저는), pas 은. Après 파시디 (voyelle), « être » se dit 예요, et la phrase 프랑스 사람 a besoin de 이에요 à la fin."},"reply":"파시디 씨, 만나서 반가워요! 저는 지우예요. 한국 음식 좋아해요?","romaji":"Pasidi ssi, mannaseo bangawoyo! Jeoneun Jiu-yeyo. Hanguk eumsik joahaeyo?","translation_fr":"Enchantée, Pasidi ! Moi, c'est Jiwoo. Tu aimes la cuisine coréenne ?","suggestions":[{"ko":"네, 정말 좋아해요.","fr":"Oui, j'adore."},{"ko":"네, 김치찌개를 좋아해요.","fr":"Oui, j'aime le ragoût de kimchi."}]}`;
+{"correction":{"has_error":true,"corrected":"안녕하세요! 저는 파시디예요. 프랑스 사람이에요.","explanation_fr":"Après une voyelle, la particule de thème est 는 (저는), pas 은. Après 파시디 (voyelle), « être » se dit 예요, et la phrase 프랑스 사람 a besoin de 이에요 à la fin."},"reply":"파시디 씨, 만나서 반가워요! 저는 지우예요. 한국 음식 좋아해요?","romaji":"Pasidi ssi, mannaseo bangawoyo! Jeoneun Jiu-yeyo. Hanguk eumsik joahaeyo?","translation_fr":"Enchantée, Pasidi ! Moi, c'est Jiwoo. Tu aimes la cuisine coréenne ?","suggestions":[{"ko":"네, 정말 좋아해요.","romaji":"Ne, jeongmal joahaeyo.","fr":"Oui, j'adore."},{"ko":"네, 김치찌개를 좋아해요.","romaji":"Ne, gimchijjigaereul joahaeyo.","fr":"Oui, j'aime le ragoût de kimchi."}]}`;
 
 const RESPOND_TOOL = {
   name: "respond",
@@ -104,8 +104,8 @@ const RESPOND_TOOL = {
         type: "array",
         items: {
           type: "object",
-          properties: { ko: { type: "string" }, fr: { type: "string" } },
-          required: ["ko", "fr"],
+          properties: { ko: { type: "string" }, romaji: { type: "string" }, fr: { type: "string" } },
+          required: ["ko", "romaji", "fr"],
         },
       },
     },
@@ -212,7 +212,7 @@ function renderSuggestions() {
   (last.data.suggestions || []).slice(0, 3).forEach((s) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.innerHTML = `<span lang="ko">${esc(s.ko)}</span><small>${esc(s.fr)}</small>`;
+    b.innerHTML = `<span lang="ko">${esc(s.ko)}</span>${s.romaji ? `<span class="sug-rom">${esc(s.romaji)}</span>` : ""}<small>${esc(s.fr)}</small>`;
     b.onclick = () => { input.value = s.ko; autosize(); input.focus(); };
     sugBox.appendChild(b);
   });
@@ -227,7 +227,7 @@ function showError(msg) {
 const JSON_FORMAT = `
 
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni balises \`\`\`. Chaque texte s'ouvre et se ferme avec des guillemets droits " (jamais 「」 ni “ ”) ; à l'intérieur d'un texte, utilise 「」 si tu dois citer. Exactement de cette forme :
-{"correction":{"has_error":false,"corrected":"","explanation_fr":""},"reply":"…","romaji":"…","translation_fr":"…","suggestions":[{"ko":"…","fr":"…"},{"ko":"…","fr":"…"}]}`;
+{"correction":{"has_error":false,"corrected":"","explanation_fr":""},"reply":"…","romaji":"…","translation_fr":"…","suggestions":[{"ko":"…","romaji":"…","fr":"…"},{"ko":"…","romaji":"…","fr":"…"}]}`;
 
 async function askAI() {
   const p = provider();
@@ -323,7 +323,7 @@ function parseJSON(text) {
   const reply = field("reply");
   if (!reply) return null;
   const err = /"has_error"\s*:\s*true/.test(raw);
-  const sugs = [...raw.matchAll(/\{\s*"(?:ja|ko)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"fr"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g)].map((m) => ({ ja: m[1], ko: m[1], fr: m[2] }));
+  const sugs = [...raw.matchAll(/\{\s*"(?:ja|ko)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*(?:"romaji"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*)?"fr"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g)].map((m) => ({ ja: m[1], ko: m[1], romaji: m[2] || "", fr: m[3] }));
   return { reply, romaji: field("romaji"), translation_fr: field("translation_fr"),
     correction: { has_error: err, corrected: field("corrected"), explanation_fr: field("explanation_fr") }, suggestions: sugs };
 }
@@ -335,7 +335,7 @@ function normalize(d) {
     romaji: String(d.romaji || ""),
     translation_fr: String(d.translation_fr || ""),
     correction: d.correction && typeof d.correction === "object" ? d.correction : null, // pas de correction lisible : on n'affiche rien (pas de faux « ✓ Correct »)
-    suggestions: Array.isArray(d.suggestions) ? d.suggestions.filter((x) => x && (x.ko || x.ja)).map((x) => ({ ko: x.ko || x.ja, fr: x.fr || "" })) : [],
+    suggestions: Array.isArray(d.suggestions) ? d.suggestions.filter((x) => x && (x.ko || x.ja)).map((x) => ({ ko: x.ko || x.ja, romaji: x.romaji || "", fr: x.fr || "" })) : [],
   };
 }
 

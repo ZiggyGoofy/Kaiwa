@@ -826,3 +826,8 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .kj-lv { display: flex; align-items: center; gap: 8px; }
 .kj-lv .kj-badge { font-size: .9rem; }
 .kj-chips small { opacity: .65; font-weight: 600; }
+
+/* rōmaji sous chaque réponse proposée */
+.suggestions button { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 1px; border-radius: 16px; }
+.suggestions button small { margin-left: 0; }
+.sug-rom { font-size: .8rem; font-style: italic; font-weight: 500; color: var(--accent); }

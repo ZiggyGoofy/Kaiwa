@@ -76,11 +76,11 @@ Format :
 - Furigana : dans "reply", "correction.corrected" et "suggestions[].ja", annote CHAQUE mot contenant des kanji avec {漢字|かんじ}. Ex. : {日本|にほん}に{行|い}きます。 Les okurigana restent hors des accolades.
 - "romaji" : transcription Hepburn complète de ta réponse.
 - "translation_fr" : traduction naturelle de ta réponse en ${LEARNER_LANG} (c'est TOI, Sakura, qui parles).
-- "suggestions" : 2 réponses courtes que l'apprenant pourrait donner à TA question, à la 1re personne (lui qui parle), avec traduction en ${LEARNER_LANG} (champ "fr").
+- "suggestions" : 2 réponses courtes que l'apprenant pourrait donner à TA question, à la 1re personne (lui qui parle), avec leur rōmaji Hepburn complet (champ "romaji") et leur traduction en ${LEARNER_LANG} (champ "fr").
 
 Exemple. Message de l'apprenant : « konnichiwa ! watashi wa pasidi desu, watashi ga furansujin »
 Bonne réponse :
-{"correction":{"has_error":true,"corrected":"こんにちは！{私|わたし}はパシディです。フランス{人|じん}です。","explanation_fr":"Pour dire ce que tu es, on utilise は (wa), pas が (ga), et la phrase se termine par です : フランスじんです. Pas besoin de répéter わたしは."},"reply":"パシディさん、はじめまして！わたしはさくらです。{日本|にほん}が{好|す}きですか。","romaji":"Pashidi-san, hajimemashite! Watashi wa Sakura desu. Nihon ga suki desu ka?","translation_fr":"Enchantée, Pasidi ! Moi, c'est Sakura. Tu aimes le Japon ?","suggestions":[{"ja":"はい、{大好|だいす}きです。","fr":"Oui, j'adore."},{"ja":"はい、{日本|にほん}の{料理|りょうり}が{好|す}きです。","fr":"Oui, j'aime la cuisine japonaise."}]}`;
+{"correction":{"has_error":true,"corrected":"こんにちは！{私|わたし}はパシディです。フランス{人|じん}です。","explanation_fr":"Pour dire ce que tu es, on utilise は (wa), pas が (ga), et la phrase se termine par です : フランスじんです. Pas besoin de répéter わたしは."},"reply":"パシディさん、はじめまして！わたしはさくらです。{日本|にほん}が{好|す}きですか。","romaji":"Pashidi-san, hajimemashite! Watashi wa Sakura desu. Nihon ga suki desu ka?","translation_fr":"Enchantée, Pasidi ! Moi, c'est Sakura. Tu aimes le Japon ?","suggestions":[{"ja":"はい、{大好|だいす}きです。","romaji":"Hai, daisuki desu.","fr":"Oui, j'adore."},{"ja":"はい、{日本|にほん}の{料理|りょうり}が{好|す}きです。","romaji":"Hai, Nihon no ryouri ga suki desu.","fr":"Oui, j'aime la cuisine japonaise."}]}`;
 
 const RESPOND_TOOL = {
   name: "respond",
@@ -104,8 +104,8 @@ const RESPOND_TOOL = {
         type: "array",
         items: {
           type: "object",
-          properties: { ja: { type: "string" }, fr: { type: "string" } },
-          required: ["ja", "fr"],
+          properties: { ja: { type: "string" }, romaji: { type: "string" }, fr: { type: "string" } },
+          required: ["ja", "romaji", "fr"],
         },
       },
     },
@@ -205,7 +205,9 @@ function renderSuggestions() {
   (last.data.suggestions || []).slice(0, 3).forEach((s) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.innerHTML = `<span lang="ja">${toRuby(s.ja)}</span><small>${esc(s.fr)}</small>`;
+    // rōmaji : celui de l'IA, sinon calculé à partir des furigana (anciennes conversations)
+    const rom = s.romaji || (typeof kanaToRomaji === "function" ? kanaToRomaji(toHiraChar(String(s.ja).replace(FURI, "$2"))).replace(/。/g, ".").replace(/、/g, ", ").replace(/？/g, "?").replace(/！/g, "!") : "");
+    b.innerHTML = `<span lang="ja">${toRuby(s.ja)}</span>${rom ? `<span class="sug-rom">${esc(rom)}</span>` : ""}<small>${esc(s.fr)}</small>`;
     b.onclick = () => { input.value = toPlain(s.ja); autosize(); input.focus(); };
     sugBox.appendChild(b);
   });
@@ -220,7 +222,7 @@ function showError(msg) {
 const JSON_FORMAT = `
 
 IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni balises \`\`\`. Chaque texte s'ouvre et se ferme avec des guillemets droits " (jamais 「」 ni “ ”) ; à l'intérieur d'un texte, utilise 「」 si tu dois citer. Exactement de cette forme :
-{"correction":{"has_error":false,"corrected":"","explanation_fr":""},"reply":"…","romaji":"…","translation_fr":"…","suggestions":[{"ja":"…","fr":"…"},{"ja":"…","fr":"…"}]}`;
+{"correction":{"has_error":false,"corrected":"","explanation_fr":""},"reply":"…","romaji":"…","translation_fr":"…","suggestions":[{"ja":"…","romaji":"…","fr":"…"},{"ja":"…","romaji":"…","fr":"…"}]}`;
 
 async function askAI() {
   const p = provider();
@@ -316,7 +318,7 @@ function parseJSON(text) {
   const reply = field("reply");
   if (!reply) return null;
   const err = /"has_error"\s*:\s*true/.test(raw);
-  const sugs = [...raw.matchAll(/\{\s*"(?:ja|ko)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"fr"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g)].map((m) => ({ ja: m[1], ko: m[1], fr: m[2] }));
+  const sugs = [...raw.matchAll(/\{\s*"(?:ja|ko)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*(?:"romaji"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*)?"fr"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g)].map((m) => ({ ja: m[1], ko: m[1], romaji: m[2] || "", fr: m[3] }));
   return { reply, romaji: field("romaji"), translation_fr: field("translation_fr"),
     correction: { has_error: err, corrected: field("corrected"), explanation_fr: field("explanation_fr") }, suggestions: sugs };
 }
