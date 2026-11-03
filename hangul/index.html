@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr" data-app="hangul">
+<head>
+  <script>try { if (localStorage.getItem("kaiwa-app") === "kaiwa") location.replace("../"); } catch (e) {}</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SpeedHangul – 한글</title>
+  <meta name="theme-color" content="#1e2a44">
+  <link rel="manifest" href="../manifest.json">
+  <link rel="icon" href="../icons/hangul.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Jua&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo" lang="ko">한글</span><span class="name">SpeedHangul</span></div>
+    <div class="toolbar">
+      <span class="pill" id="ptsPill" title="Tes points" data-i18n-title="tPoints">⭐ 0</span>
+      <button class="toggle" id="tgRomaji" title="Afficher la romanisation" data-i18n-title="tRomaji" aria-pressed="true">abc</button>
+      <button class="icon" id="btnSettings" title="Réglages" data-i18n-title="tSettings">⚙</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-view="hangeul"><span class="ti" lang="ko">한</span><span class="tl" data-i18n="tabHangeul">Hangeul</span></button>
+    <button data-view="phrases"><span class="ti">💬</span><span class="tl" data-i18n="tabPhrases">Phrases</span></button>
+    <button data-view="jour" class="main-tab"><span class="ti" lang="ko">말</span><span class="tl" data-i18n="tabToday">Aujourd'hui</span><span class="dot tab-dot" id="wotdDot"></span></button>
+    <button data-view="cards"><span class="ti">🃏</span><span class="tl" data-i18n="tabCards">Cartes</span></button>
+    <button data-view="quiz"><span class="ti">🏆</span><span class="tl" data-i18n="tabQuiz">Quiz</span></button>
+  </nav>
+
+  <div class="views">
+    <section class="view scroll" id="view-jour" hidden></section>
+    <section class="view scroll" id="view-hangeul" hidden></section>
+    <section class="view scroll" id="view-phrases" hidden></section>
+    <section class="view scroll" id="view-cards" hidden></section>
+    <section class="view scroll" id="view-quiz" hidden></section>
+  </div>
+
+  <!-- Fiche d'une lettre -->
+  <dialog id="kanaDialog" class="kana-dialog">
+    <button class="close-x" id="kanaClose" title="Fermer" data-i18n-title="tClose">✕</button>
+    <div id="kanaDetail"></div>
+  </dialog>
+
+  <!-- Choix de la langue (premier lancement) -->
+  <dialog id="langDialog" class="lang-dialog">
+    <div class="lang-box">
+      <div class="lang-logo" lang="ko">한글</div>
+      <h2>SpeedHangul</h2>
+      <p>Choisis ta langue · Choose your language</p>
+      <div class="lang-choices">
+        <button class="lang-btn" data-lang="fr"><span class="flag">🇫🇷</span>Français</button>
+        <button class="lang-btn" data-lang="en"><span class="flag">🇬🇧</span>English</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="settings">
+    <form method="dialog" class="settings">
+      <h2 data-i18n="settings">Réglages</h2>
+      <label><span data-i18n="appLabel">Application</span>
+        <select id="appSelect">
+          <option value="kaiwa" data-i18n="optKaiwa">会話 Kaiwa — japonais</option>
+          <option value="hangul" data-i18n="optHangul">한글 SpeedHangul — coréen</option>
+        </select>
+      </label>
+      <label><span data-i18n="language">Langue</span>
+        <select id="langSelect">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </label>
+      <label><span><span data-i18n="voiceRate">Vitesse de la voix :</span> <span id="rateVal"></span></span>
+        <input type="range" id="rate" min="0.5" max="1.2" step="0.05">
+      </label>
+      <button type="button" class="btn small" id="btnTestVoice" data-i18n="testVoice">🔊 Tester la voix</button>
+      <small data-i18n="voiceHelp">Pas de voix coréenne ? Sur Windows : Paramètres → Heure et langue → Langue → ajouter « Coréen » (avec la synthèse vocale).</small>
+      <div class="actions">
+        <button value="close" class="btn" data-i18n="close">Fermer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="i18n.js"></script>
+  <script src="../appchoice.js"></script>
+  <script src="content.js"></script>
+  <script src="mnemo.js"></script>
+  <script src="core.js"></script>
+  <script src="learn.js"></script>
+  <script src="bruteforce.js"></script>
+  <script src="speed.js"></script>
+</body>
+</html>

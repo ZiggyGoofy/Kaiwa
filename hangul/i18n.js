@@ -1,0 +1,34 @@
+// Langue de l'interface : "fr" ou "en". Choisie au premier lancement, modifiable dans les réglages.
+const LANG_KEY = "kaiwa-lang"; // partagée avec Kaiwa : la langue se choisit une seule fois
+let LANG = (() => { try { return localStorage.getItem(LANG_KEY); } catch { return null; } })();
+const LANG_CHOSEN = LANG === "fr" || LANG === "en";
+if (!LANG_CHOSEN) LANG = (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en";
+const LOCALE = LANG === "en" ? "en-GB" : "fr-FR";
+document.documentElement.lang = LANG;
+
+// L("texte français", "English text") → texte dans la langue choisie
+const L = (fr, en) => (LANG === "en" ? en : fr);
+// pluriel simple : P(n, "jour", "jours", "day", "days")
+const P = (n, fr1, frN, en1, enN) => (n > 1 || (LANG === "en" && n === 0) ? L(frN, enN) : L(fr1, en1));
+const fmt = (n) => n.toLocaleString(LOCALE);
+
+function setLang(lang) {
+  try { localStorage.setItem(LANG_KEY, lang); } catch {}
+  if (lang !== LANG) location.reload();
+  // même langue que celle du navigateur : pas de rechargement, on enchaîne sur le choix de l'app
+  else if (typeof appChosen === "function" && !appChosen()) showAppChooser();
+}
+
+// Textes fixes de index.html (attributs data-i18n, data-i18n-title, data-i18n-ph)
+const STATIC_EN = {
+  tabHangeul: "Hangeul", tabPhrases: "Phrases", tabToday: "Today", tabCards: "Cards", tabQuiz: "Quiz",
+  settings: "Settings", appLabel: "App", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", voiceRate: "Voice speed:", testVoice: "🔊 Test the voice",
+  voiceHelp: "No Korean voice? On Windows: Settings → Time & language → Language → add Korean (with text-to-speech).",
+  close: "Close", tRomaji: "Show romanization", tSettings: "Settings", tPoints: "Your points", tClose: "Close",
+};
+function applyStaticText() {
+  if (LANG !== "en") return;
+  document.querySelectorAll("[data-i18n]").forEach((el) => { const v = STATIC_EN[el.dataset.i18n]; if (v) el.textContent = v; });
+  document.querySelectorAll("[data-i18n-title]").forEach((el) => { const v = STATIC_EN[el.dataset.i18nTitle]; if (v) el.title = v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => { const v = STATIC_EN[el.dataset.i18nPh]; if (v) el.placeholder = v; });
+}
