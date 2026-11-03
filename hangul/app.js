@@ -70,7 +70,7 @@ Correction (champ "correction") — analyse le DERNIER message de l'apprenant :
 - Sinon has_error=true, "corrected" = sa phrase corrigée en hangeul, en gardant SON prénom et SES informations.
 - "explanation_fr" : 1 à 2 phrases en ${LEARNER_LANG}, précises et vraies. Nomme l'erreur exacte en montrant le mot fautif et sa correction. Ex. : « Après une voyelle, la particule de thème est 는 et pas 은 : 저는. Et pour « être » après une voyelle, on dit 예요 : 파시디예요. »
 - Rappels de grammaire : 이에요/예요 est la copule (« être ») : 이에요 après une consonne, 예요 après une voyelle. Les particules (은/는, 이/가, 을/를, 에, 에서, 도, 의, (으)로…) changent selon que le mot finit par une consonne (batchim) ou une voyelle.
-- Ne signale pas les fautes de frappe évidentes de la romanisation, l'absence de majuscules ni les petites erreurs d'espacement. Pas de correction pour le message d'ouverture (has_error=false).
+- Ne signale pas les fautes de frappe évidentes de la romanisation, l'absence de majuscules ni la façon de couper ou d'espacer les mots en romanisation (« gongbu haeyo » = « gongbuhaeyo » : c'est CORRECT). Pas de correction pour le message d'ouverture (has_error=false).
 
 Format :
 - "reply" : ta réponse en hangeul uniquement.
@@ -226,7 +226,7 @@ function showError(msg) {
 // ---------- Appel à l'IA ----------
 const JSON_FORMAT = `
 
-IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni balises \`\`\`, exactement de cette forme :
+IMPORTANT : réponds UNIQUEMENT avec un objet JSON valide, sans texte autour ni balises \`\`\`. Chaque texte s'ouvre et se ferme avec des guillemets droits " (jamais 「」 ni “ ”) ; à l'intérieur d'un texte, utilise 「」 si tu dois citer. Exactement de cette forme :
 {"correction":{"has_error":false,"corrected":"","explanation_fr":""},"reply":"…","romaji":"…","translation_fr":"…","suggestions":[{"ko":"…","fr":"…"},{"ko":"…","fr":"…"}]}`;
 
 async function askAI() {
@@ -291,15 +291,41 @@ async function askOpenAI(p, history) {
     delete body.response_format; delete body.reasoning_effort; // certains modèles ne gèrent pas le mode JSON
     json = await post(p, p.url, headers, body);
   }
-  return parseJSON(json.choices?.[0]?.message?.content || "");
+  let data = parseJSON(json.choices?.[0]?.message?.content || "");
+  if (!data) { // réponse illisible : on redemande une fois
+    json = await post(p, p.url, headers, body);
+    data = parseJSON(json.choices?.[0]?.message?.content || "");
+  }
+  // toujours rien : on montre au moins le texte, sans fausse correction
+  return data || { reply: (json.choices?.[0]?.message?.content || "…").trim(), romaji: "", translation_fr: "", correction: null, suggestions: [] };
 }
 
+// Lit la réponse JSON du modèle. Les modèles gratuits la cassent parfois (ex. 」 à la place de " pour fermer un texte) :
+// 1) lecture normale, 2) réparation des guillemets japonais mal placés, 3) extraction champ par champ.
+// Renvoie null si rien d'exploitable (askOpenAI redemande alors une fois).
 function parseJSON(text) {
   const t = text.replace(/```(?:json)?/g, "");
   const a = t.indexOf("{"), b = t.lastIndexOf("}");
-  if (a >= 0 && b > a) { try { return JSON.parse(t.slice(a, b + 1)); } catch {} }
-  // le modèle n'a pas respecté le format : on affiche au moins sa réponse
-  return { reply: text.trim() || "…", romaji: "", translation_fr: "", correction: { has_error: false }, suggestions: [] };
+  if (a < 0 || b <= a) return null;
+  const raw = t.slice(a, b + 1);
+  const tries = [raw,
+    raw.replace(/[」』”“]\s*(?=[,}\]]\s*["}\]]?)/g, '"'),          // 」, → ",
+    raw.replace(/[」』”“]\s*(?=[,}\]])/g, '"').replace(/,\s*([}\]])/g, "$1")];
+  for (const s of tries) { try { return JSON.parse(s); } catch {} }
+  // extraction champ par champ
+  const field = (k, src = raw) => {
+    const m = src.match(new RegExp(`"${k}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
+    if (!m) return "";
+    let v = m[1].replace(/[」』”]?\s*,?\s*$/, "");
+    try { v = JSON.parse(`"${v}"`); } catch { v = v.replace(/\\"/g, '"').replace(/\\n/g, "\n"); }
+    return v;
+  };
+  const reply = field("reply");
+  if (!reply) return null;
+  const err = /"has_error"\s*:\s*true/.test(raw);
+  const sugs = [...raw.matchAll(/\{\s*"(?:ja|ko)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"fr"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/g)].map((m) => ({ ja: m[1], ko: m[1], fr: m[2] }));
+  return { reply, romaji: field("romaji"), translation_fr: field("translation_fr"),
+    correction: { has_error: err, corrected: field("corrected"), explanation_fr: field("explanation_fr") }, suggestions: sugs };
 }
 
 function normalize(d) {
@@ -308,7 +334,7 @@ function normalize(d) {
     reply: String(d.reply || "…"),
     romaji: String(d.romaji || ""),
     translation_fr: String(d.translation_fr || ""),
-    correction: d.correction && typeof d.correction === "object" ? d.correction : { has_error: false },
+    correction: d.correction && typeof d.correction === "object" ? d.correction : null, // pas de correction lisible : on n'affiche rien (pas de faux « ✓ Correct »)
     suggestions: Array.isArray(d.suggestions) ? d.suggestions.filter((x) => x && (x.ko || x.ja)).map((x) => ({ ko: x.ko || x.ja, fr: x.fr || "" })) : [],
   };
 }
