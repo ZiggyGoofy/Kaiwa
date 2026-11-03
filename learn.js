@@ -41,7 +41,6 @@ function kanaItems(set) {
 const listItems = (src, key) => src[key].items.map(([ja, romaji, fr], i) => ({ id: String(i), ja, romaji, fr }));
 
 const DECKS = {};
-const KJ_GROUP_SIZE = 50;
 const GROUP_NAMES = { Kana: "Kana", Particules: L("Particules", "Particles"), Vocabulaire: L("Vocabulaire", "Vocabulary"), Kanji: "Kanji" };
 DECKS["kana:hira"] = { group: "Kana", title: "Hiragana", icon: "あ", items: () => kanaItems("hira") };
 DECKS["kana:kata"] = { group: "Kana", title: "Katakana", icon: "ア", items: () => kanaItems("kata") };
@@ -50,12 +49,30 @@ for (const k in PARTICLES) DECKS["part:" + k] = { group: "Particules", kind: "pa
 DECKS["part:mix"] = { group: "Particules", kind: "particle", title: L("Tout mélangé", "All mixed"), icon: "🔀", items: () => Object.keys(PARTICLES).flatMap(particleItems) };
 const VOCAB_ICONS = { nombres: "一", temps: "日", nourriture: "食", lieux: "駅", verbes: "行", adjectifs: "大", personnes: "人", liaison: "話", questions: "何", quotidien: "生", verbes2: "会", adjectifs2: "好", reactions: "笑" };
 for (const k in VOCAB) DECKS["vocab:" + k] = { group: "Vocabulaire", title: VOCAB[k].title, icon: VOCAB_ICONS[k] || "語", items: () => listItems(VOCAB, k) };
-// Kanji : un paquet par groupe de 50 (du plus fréquent au moins fréquent)
-KANJI.forEach((k, i) => {
-  const g = Math.floor(i / KJ_GROUP_SIZE);
-  DECKS["kanji:" + g] ||= { group: "Kanji", kind: "kanji", title: `Kanji ${g * KJ_GROUP_SIZE + 1}–${Math.min(KANJI.length, (g + 1) * KJ_GROUP_SIZE)}`, icon: k[0],
-    items: () => KANJI.slice(g * KJ_GROUP_SIZE, (g + 1) * KJ_GROUP_SIZE).map((x) => ({ id: x[0], ja: x[0], kanji: x, romaji: "", fr: x[0] })) };
-});
+// Kanji : triés par niveau JLPT (N5 → N1), puis par fréquence. Un niveau trop gros est coupé en paquets de 70 max.
+const KJ_LEVELS = ["N5", "N4", "N3", "N2", "N1"];
+const KJ_BY_LEVEL = Object.fromEntries(KJ_LEVELS.map((lv) => [lv, KANJI.filter((k) => k[2] === lv)]));
+const KJ_ORDER = KJ_LEVELS.flatMap((lv) => KJ_BY_LEVEL[lv]); // tout, dans l'ordre des niveaux
+const KJ_MAX_DECK = 70;
+for (const lv of KJ_LEVELS) {
+  const list = KJ_BY_LEVEL[lv], parts = Math.ceil(list.length / KJ_MAX_DECK), size = Math.ceil(list.length / parts);
+  for (let p = 0; p < parts; p++) {
+    const slice = list.slice(p * size, (p + 1) * size);
+    DECKS[`kanji:${lv}:${p}`] = { group: "Kanji", kind: "kanji", title: `Kanji ${lv}${parts > 1 ? ` (${p + 1}/${parts})` : ""}`, icon: slice[0][0],
+      items: () => slice.map((x) => ({ id: x[0], ja: x[0], kanji: x, romaji: "", fr: x[0] })) };
+  }
+}
+// anciens paquets « Kanji 1–50 »… : on garde les kanji déjà maîtrisés
+for (const key of Object.keys(learn.known)) {
+  if (!/^kanji:\d+$/.test(key)) continue;
+  const old = new Set(learn.known[key]);
+  for (const [id, d] of Object.entries(DECKS)) if (id.startsWith("kanji:")) {
+    const hit = d.items().filter((it) => old.has(it.id)).map((it) => it.id);
+    if (hit.length) learn.known[id] = [...new Set([...(learn.known[id] || []), ...hit])];
+  }
+  delete learn.known[key];
+}
+saveLearn();
 
 const knownSet = (deck) => new Set(learn.known[deck] || []);
 
@@ -319,11 +336,8 @@ document.addEventListener("keydown", (e) => {
 })();
 
 // ---------- Kanji : les 500 plus fréquents ----------
-const KJ_GROUP = KJ_GROUP_SIZE; // groupes de 50, du plus fréquent au moins fréquent
-const kjGroups = () => Array.from({ length: Math.ceil(KANJI.length / KJ_GROUP) }, (_, g) => KANJI.slice(g * KJ_GROUP, (g + 1) * KJ_GROUP));
 const kjMeanings = (k) => L(k[6], k[5]);
 const kjMeaning = (k) => kjMeanings(k).slice(0, 2).join(", ");
-const kjRange = (g) => `${g * KJ_GROUP + 1}–${Math.min(KANJI.length, (g + 1) * KJ_GROUP)}`;
 // lecture en hiragana → rōmaji (pour le mot d'exemple)
 function kanaToRomaji(s) {
   let out = "";
@@ -341,47 +355,51 @@ const fold = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
 let kjFilter = { group: "all", q: "" };
 
 renderers.kanji = function () {
-  const v = $("view-kanji"), groups = kjGroups();
-  const known = new Set(groups.flatMap((_, g) => learn.known["kanji:" + g] || []));
+  const v = $("view-kanji");
+  const known = new Set(Object.entries(learn.known).filter(([id]) => id.startsWith("kanji:")).flatMap(([, x]) => x));
   v.innerHTML = `
-    <div class="panel-title"><h2>Kanji 漢字</h2><p>${L(`Les ${KANJI.length} kanji les plus utilisés, du plus fréquent au moins fréquent. Touche un kanji pour voir sa fiche.`, `The ${KANJI.length} most used kanji, from most to least frequent. Tap a kanji to open its card.`)}</p></div>
+    <div class="panel-title"><h2>Kanji 漢字</h2><p>${L(`Les ${KANJI.length} kanji les plus utilisés, triés par niveau JLPT (N5 = le plus facile → N1), puis du plus fréquent au moins fréquent. Touche un kanji pour voir sa fiche.`, `The ${KANJI.length} most used kanji, sorted by JLPT level (N5 = easiest → N1), then from most to least frequent. Tap a kanji to open its card.`)}</p></div>
     <input type="search" id="kjSearch" class="kj-search" placeholder="${L("Chercher : sens, lecture, kanji…", "Search: meaning, reading, kanji…")}" value="${esc(kjFilter.q)}" autocomplete="off">
     <div class="chips kj-chips">
       <button data-g="all" class="${kjFilter.group === "all" ? "on" : ""}">${L("Tous", "All")}</button>
-      ${groups.map((grp, g) => `<button data-g="${g}" class="${String(g) === String(kjFilter.group) ? "on" : ""}">${kjRange(g)}</button>`).join("")}
+      ${KJ_LEVELS.map((lv) => `<button data-g="${lv}" class="${lv === kjFilter.group ? "on" : ""}">${lv} <small>${KJ_BY_LEVEL[lv].length}</small></button>`).join("")}
     </div>
     <p class="kj-count muted" id="kjCount"></p>
-    <div class="kj-grid" id="kjGrid"></div>
+    <div id="kjGrid"></div>
     <div class="cta-row">
       <button class="btn gold" id="kjCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
     </div>
-    <p class="cal-help">${L("Le point vert = kanji marqué « Je savais » dans les cartes. Sources : KANJIDIC2 et JMdict (EDRDG).", "Green dot = kanji marked \"I knew it\" in the cards. Sources: KANJIDIC2 and JMdict (EDRDG).")}</p>`;
+    <p class="cal-help">${L("Le point vert = kanji marqué « Je savais » dans les cartes. Le #numéro = rang de fréquence. Sources : KANJIDIC2 et JMdict (EDRDG), niveaux JLPT : tanos.co.uk.", "Green dot = kanji marked \"I knew it\" in the cards. The #number = frequency rank. Sources: KANJIDIC2 and JMdict (EDRDG), JLPT levels: tanos.co.uk.")}</p>`;
   const draw = () => {
     const q = fold(kjFilter.q.trim());
-    const list = KANJI.map((k, i) => [k, i]).filter(([k, i]) => {
-      if (kjFilter.group !== "all" && Math.floor(i / KJ_GROUP) !== +kjFilter.group) return false;
+    const match = (k) => {
       if (!q) return true;
       // japonais (kanji, lectures, mot d'exemple) : n'importe où ; sens : au début d'un mot (« eau » ≠ « bureau »)
       const ja = [k[0], ...k[3], ...k[4], k[7].replace(/\{([^|]+)\|[^}]+\}/g, "$1"), k[8]].join(" ").replace(/・/g, "");
       if (ja.includes(kjFilter.q.trim()) || ja.includes(toHiraChar(kjFilter.q.trim()))) return true;
       const words = [...k[5], ...k[6], k[9], k[10]].map(fold).join(" ");
       return new RegExp("(^|[^a-z0-9])" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(words);
-    });
-    $("kjCount").textContent = L(`${list.length} kanji`, `${list.length} kanji`);
-    $("kjGrid").innerHTML = list.map(([k, i]) => `<button class="kj ${known.has(k[0]) ? "known" : ""}" data-i="${i}"><b lang="ja">${k[0]}</b><small>${esc(kjMeanings(k)[0] || "")}</small></button>`).join("")
+    };
+    const levels = kjFilter.group === "all" ? KJ_LEVELS : [kjFilter.group];
+    const shown = levels.map((lv) => [lv, KJ_BY_LEVEL[lv].filter(match)]).filter(([, list]) => list.length);
+    const order = shown.flatMap(([, list]) => list.map((k) => KANJI.indexOf(k)));
+    $("kjCount").textContent = `${order.length} kanji`;
+    $("kjGrid").innerHTML = shown.map(([lv, list]) => `
+      <h3 class="sec kj-lv"><span class="kj-badge jl">${lv}</span> ${list.length} kanji</h3>
+      <div class="kj-grid">${list.map((k) => `<button class="kj ${known.has(k[0]) ? "known" : ""}" data-i="${KANJI.indexOf(k)}"><b lang="ja">${k[0]}</b><small>${esc(kjMeanings(k)[0] || "")}</small></button>`).join("")}</div>`).join("")
       || `<p class="muted">${L("Aucun kanji trouvé.", "No kanji found.")}</p>`;
-    $("kjGrid").querySelectorAll(".kj").forEach((b) => (b.onclick = () => { pop(b); openKanji(+b.dataset.i, list.map(([, i]) => i)); }));
+    $("kjGrid").querySelectorAll(".kj").forEach((b) => (b.onclick = () => { pop(b); openKanji(+b.dataset.i, order); }));
   };
   draw();
   $("kjSearch").oninput = (e) => { kjFilter.q = e.target.value; draw(); };
   v.querySelectorAll(".kj-chips button").forEach((b) => (b.onclick = () => { kjFilter.group = b.dataset.g; renderers.kanji(); }));
-  $("kjCards").onclick = () => { showView("cards"); openDeck("kanji:" + (kjFilter.group === "all" ? 0 : kjFilter.group)); };
+  $("kjCards").onclick = () => { showView("cards"); openDeck(`kanji:${kjFilter.group === "all" ? "N5" : kjFilter.group}:0`); };
 };
 
 // Fiche d'un kanji (même fenêtre que les kana, avec ‹ › pour passer au suivant)
 let kjList = [], kjPos = 0;
 function openKanji(i, list) {
-  kjList = list && list.length ? list : KANJI.map((_, j) => j);
+  kjList = list && list.length ? list : KJ_ORDER.map((k) => KANJI.indexOf(k));
   kjPos = Math.max(0, kjList.indexOf(i));
   renderKanjiDetail(true);
   if (!$("kanaDialog").open) $("kanaDialog").showModal();

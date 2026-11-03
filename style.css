@@ -823,3 +823,6 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 }
 .kj-sub { color: var(--muted); font-size: .95rem; margin-top: -6px; }
 .quiz-q .big-ja:lang(ja) { font-family: inherit; }
+.kj-lv { display: flex; align-items: center; gap: 8px; }
+.kj-lv .kj-badge { font-size: .9rem; }
+.kj-chips small { opacity: .65; font-weight: 600; }

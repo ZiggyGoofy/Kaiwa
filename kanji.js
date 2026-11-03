@@ -1,5 +1,6 @@
 // Kaiwa — les 500 kanji les plus fréquents (classement de fréquence dans la presse japonaise, KANJIDIC2).
 // [kanji, nombre de traits, niveau JLPT, on'yomi, kun'yomi, sens EN, sens FR, mot d'exemple {furigana}, lecture, traduction FR, traduction EN]
+// Niveau JLPT estimé à la main pour 分 的 無 可 身 韓 岡 (absents de la liste tanos).
 // Lectures, sens et niveaux : KANJIDIC2 et JMdict (EDRDG, licence CC BY-SA 4.0) ; niveaux JLPT : tanos.co.uk.
 // Mots d'exemple choisis pour être utiles au quotidien, lectures vérifiées dans JMdict.
 const KANJI = [
@@ -26,7 +27,7 @@ const KANJI = [
   ["社", 7, "N4", ["シャ"], ["やしろ"], ["company", "firm", "office", "association"], ["temple shinto", "compagnie", "firme", "bureau"], "{会社|かいしゃ}", "かいしゃ", "entreprise", "company"],
   ["見", 7, "N5", ["ケン"], ["み・る", "み・える", "み・せる"], ["see", "hopes", "chances", "idea"], ["regarder", "voir", "visible", "espoirs"], "{見|み}る", "みる", "voir, regarder", "to see, to watch"],
   ["月", 4, "N5", ["ゲツ", "ガツ"], ["つき"], ["month", "moon"], ["lune", "mois"], "{月曜日|げつようび}", "げつようび", "lundi", "Monday"],
-  ["分", 4, "", ["ブン", "フン", "ブ"], ["わ・ける", "わ・け", "わ・かれる", "わ・かる"], ["part", "minute of time", "segment", "share"], ["portion", "minute", "section", "part"], "{自分|じぶん}", "じぶん", "soi-même", "oneself"],
+  ["分", 4, "N5", ["ブン", "フン", "ブ"], ["わ・ける", "わ・け", "わ・かれる", "わ・かる"], ["part", "minute of time", "segment", "share"], ["portion", "minute", "section", "part"], "{自分|じぶん}", "じぶん", "soi-même", "oneself"],
   ["議", 20, "N3", ["ギ"], [], ["deliberation", "consultation", "debate", "consideration"], ["délibération", "entretien", "débat", "considération"], "{会議|かいぎ}", "かいぎ", "réunion", "meeting"],
   ["後", 9, "N5", ["ゴ", "コウ"], ["のち", "うし・ろ", "うしろ", "あと"], ["behind", "back", "later"], ["après", "derrière", "plus tard"], "{午後|ごご}", "ごご", "après-midi", "afternoon"],
   ["前", 9, "N5", ["ゼン"], ["まえ", "-まえ"], ["in front", "before"], ["devant", "avant"], "{名前|なまえ}", "なまえ", "nom, prénom", "name"],
@@ -107,7 +108,7 @@ const KANJI = [
   ["来", 7, "N5", ["ライ", "タイ"], ["く・る", "きた・る", "きた・す", "き・たす"], ["come", "due", "next", "cause"], ["venir", "dû à", "suivant", "causer"], "{来週|らいしゅう}", "らいしゅう", "la semaine prochaine", "next week"],
   ["作", 7, "N4", ["サク", "サ"], ["つく・る", "つく・り", "-づく・り"], ["make", "production", "prepare", "build"], ["fabriquer", "produire", "construire", "préparer"], "{作|つく}る", "つくる", "fabriquer, préparer", "to make"],
   ["性", 8, "N3", ["セイ", "ショウ"], ["さが"], ["sex", "gender", "nature"], ["sexe", "genre", "nature", "propriétés"], "{女性|じょせい}", "じょせい", "femme", "woman"],
-  ["的", 8, "", ["テキ"], ["まと"], ["bull's eye", "mark", "target", "object"], ["cible", "but", "objectif", "terminaison d'adjectif"], "{目的|もくてき}", "もくてき", "but, objectif", "purpose, goal"],
+  ["的", 8, "N3", ["テキ"], ["まと"], ["bull's eye", "mark", "target", "object"], ["cible", "but", "objectif", "terminaison d'adjectif"], "{目的|もくてき}", "もくてき", "but, objectif", "purpose, goal"],
   ["要", 9, "N3", ["ヨウ"], ["い・る", "かなめ"], ["need", "main point", "essence", "pivot"], ["besoin", "point principal", "pivot", "essentiel"], "{必要|ひつよう}", "ひつよう", "nécessaire", "necessary"],
   ["用", 5, "N4", ["ヨウ"], ["もち・いる"], ["utilize", "business", "service", "use"], ["se servir de", "affaires", "service", "utiliser"], "{用事|ようじ}", "ようじ", "affaire à régler", "errand, business"],
   ["制", 8, "N3", ["セイ"], [], ["system", "law", "rule"], ["système", "règle", "loi", "régime"], "{制服|せいふく}", "せいふく", "uniforme", "uniform"],
@@ -276,7 +277,7 @@ const KANJI = [
   ["争", 6, "N3", ["ソウ"], ["あらそ・う", "いか・でか"], ["contend", "dispute", "argue"], ["se quereller", "se disputer"], "{競争|きょうそう}", "きょうそう", "compétition", "competition"],
   ["談", 15, "N3", ["ダン"], [], ["discuss", "talk"], ["discuter", "parler"], "{相談|そうだん}", "そうだん", "consultation, conseil", "consultation, advice"],
   ["能", 10, "N3", ["ノウ"], ["よ・く", "あた・う"], ["ability", "talent", "skill", "capacity"], ["capacité", "habileté", "talent", "adresse"], "{能力|のうりょく}", "のうりょく", "capacité", "ability"],
-  ["無", 12, "", ["ム", "ブ"], ["な・い"], ["nothingness", "none", "ain't", "nothing"], ["néant", "rien", "ne pas", "non"], "{無理|むり}", "むり", "impossible", "impossible"],
+  ["無", 12, "N3", ["ム", "ブ"], ["な・い"], ["nothingness", "none", "ain't", "nothing"], ["néant", "rien", "ne pas", "non"], "{無理|むり}", "むり", "impossible", "impossible"],
   ["再", 6, "N2", ["サイ", "サ"], ["ふたた・び"], ["again", "twice", "second time"], ["encore une fois", "deux fois", "une deuxième fois"], "{再来年|さらいねん}", "さらいねん", "dans deux ans", "the year after next"],
   ["位", 7, "N3", ["イ"], ["くらい", "ぐらい"], ["rank", "grade", "throne", "crown"], ["rang", "position", "grade", "trône"], "{位置|いち}", "いち", "position", "position"],
   ["置", 13, "N3", ["チ"], ["お・く", "-お・き"], ["placement", "put", "set", "deposit"], ["placer", "poser", "déposer", "faire à l'avance"], "{置|お}く", "おく", "poser, mettre", "to put"],
@@ -316,13 +317,13 @@ const KANJI = [
   ["送", 9, "N4", ["ソウ"], ["おく・る"], ["escort", "send"], ["escorter", "envoyer"], "{送|おく}る", "おくる", "envoyer", "to send"],
   ["援", 12, "N1", ["エン"], [], ["abet", "help", "save"], ["renfort", "aide", "assistance"], "{応援|おうえん}", "おうえん", "soutien, encouragements", "support, cheering"],
   ["供", 8, "N3", ["キョウ", "ク", "クウ", "グ"], ["そな・える", "とも", "-ども"], ["submit", "offer", "present", "serve (meal)"], ["présenter", "offrir", "soumettre", "proposer"], "{子供|こども}", "こども", "enfant", "child"],
-  ["可", 5, "", ["カ", "コク"], ["-べ・き", "-べ・し"], ["can", "passable", "approval"], ["possible", "acceptable", "ne doit pas", "ne pas, négatif"], "{可能|かのう}", "かのう", "possible", "possible"],
+  ["可", 5, "N3", ["カ", "コク"], ["-べ・き", "-べ・し"], ["can", "passable", "approval"], ["possible", "acceptable", "ne doit pas", "ne pas, négatif"], "{可能|かのう}", "かのう", "possible", "possible"],
   ["役", 7, "N3", ["ヤク", "エキ"], [], ["duty", "war", "campaign", "drafted labor"], ["rôle", "fonctions", "guerre", "campagne"], "{役|やく}に{立|た}つ", "やくにたつ", "être utile", "to be useful"],
   ["構", 14, "N3", ["コウ"], ["かま・える", "かま・う"], ["posture", "stance", "appearance", "build"], ["structure", "concerné", "préoccupé", "construire"], "{結構|けっこう}", "けっこう", "assez, ça va (merci)", "quite; no thank you"],
   ["木", 4, "N5", ["ボク", "モク"], ["き", "こ-"], ["tree", "wood"], ["arbre", "bois (matière)"], "{木|き}", "き", "arbre", "tree"],
   ["割", 12, "N3", ["カツ"], ["わ・る", "わり", "わ・り", "わ・れる"], ["proportion", "comparatively", "divide", "cut"], ["briser", "diviser", "couper", "séparer"], "{割引|わりびき}", "わりびき", "réduction", "discount"],
   ["聞", 14, "N5", ["ブン", "モン"], ["き・く", "き・こえる"], ["hear", "ask", "listen"], ["entendre", "écouter", "demander"], "{聞|き}く", "きく", "écouter, demander", "to listen, to ask"],
-  ["身", 7, "", ["シン"], ["み"], ["somebody", "person", "one's station in life"], ["individu", "personne", "situation sociale"], "{身長|しんちょう}", "しんちょう", "taille (d'une personne)", "height"],
+  ["身", 7, "N3", ["シン"], ["み"], ["somebody", "person", "one's station in life"], ["individu", "personne", "situation sociale"], "{身長|しんちょう}", "しんちょう", "taille (d'une personne)", "height"],
   ["費", 12, "N3", ["ヒ"], ["つい・やす", "つい・える"], ["expense", "cost", "spend", "consume"], ["dépense", "coût", "dépenser", "consommer"], "{費用|ひよう}", "ひよう", "frais, coût", "cost, expenses"],
   ["付", 5, "N3", ["フ"], ["つ・ける", "-つ・ける", "-づ・ける", "つ・け"], ["adhere", "attach", "refer to", "append"], ["coller", "attacher", "soumettre à", "ajouter"], "{受付|うけつけ}", "うけつけ", "accueil, réception", "reception desk"],
   ["施", 9, "N1", ["シ", "セ"], ["ほどこ・す"], ["give", "bestow", "perform", "alms"], ["donner", "aumône", "poser des bandages", "administrer 1ers secours"], "{施設|しせつ}", "しせつ", "établissement", "facility"],
@@ -447,7 +448,7 @@ const KANJI = [
   ["味", 8, "N4", ["ミ"], ["あじ", "あじ・わう"], ["flavor", "taste"], ["goût", "saveur"], "{意味|いみ}", "いみ", "sens, signification", "meaning"],
   ["負", 9, "N3", ["フ"], ["ま・ける", "ま・かす", "お・う"], ["defeat", "negative", "-", "minus"], ["défaite", "perdre", "moins", "négatif"], "{負|ま}ける", "まける", "perdre (un match)", "to lose"],
   ["閣", 14, "N1", ["カク"], [], ["tower", "tall building", "palace"], ["tour", "tour (immeuble)", "palais"], "{内閣|ないかく}", "ないかく", "gouvernement (cabinet)", "cabinet"],
-  ["韓", 18, "", ["カン"], ["から", "いげた"], ["Korea"], ["Corée"], "{韓国|かんこく}", "かんこく", "Corée du Sud", "South Korea"],
+  ["韓", 18, "N1", ["カン"], ["から", "いげた"], ["Korea"], ["Corée"], "{韓国|かんこく}", "かんこく", "Corée du Sud", "South Korea"],
   ["渡", 12, "N3", ["ト"], ["わた・る", "-わた・る", "わた・す"], ["transit", "ford", "ferry", "cross"], ["transit", "gué", "bac", "traversée"], "{渡|わた}す", "わたす", "remettre, donner", "to hand over"],
   ["失", 5, "N3", ["シツ"], ["うしな・う", "う・せる"], ["lose", "error", "fault", "disadvantage"], ["perdre", "erreur", "faute", "désavantage"], "{失敗|しっぱい}", "しっぱい", "échec", "failure"],
   ["移", 11, "N2", ["イ"], ["うつ・る", "うつ・す"], ["shift", "move", "change", "drift"], ["déplacer", "transporter", "déménager", "changer"], "{移動|いどう}", "いどう", "déplacement", "movement, transfer"],
@@ -465,7 +466,7 @@ const KANJI = [
   ["極", 12, "N2", ["キョク", "ゴク"], ["きわ・める", "きわ・まる", "きわ・まり", "きわ・み"], ["poles", "settlement", "conclusion", "end"], ["extrêmes", "pôles (N et S)", "décision", "conclusion"], "{積極的|せっきょくてき}", "せっきょくてき", "actif, volontaire", "proactive"],
   ["種", 14, "N3", ["シュ"], ["たね", "-ぐさ"], ["species", "kind", "class", "variety"], ["espèce", "classe", "sorte", "variété"], "{種類|しゅるい}", "しゅるい", "sorte, type", "kind, type"],
   ["美", 9, "N3", ["ビ", "ミ"], ["うつく・しい"], ["beauty", "beautiful"], ["beauté", "beau, belle"], "{美|うつく}しい", "うつくしい", "beau", "beautiful"],
-  ["岡", 8, "", ["コウ"], ["おか"], ["mount", "hill", "knoll"], ["mont", "colline", "butte"], "{福岡|ふくおか}", "ふくおか", "Fukuoka (ville)", "Fukuoka (city)"],
+  ["岡", 8, "N1", ["コウ"], ["おか"], ["mount", "hill", "knoll"], ["mont", "colline", "butte"], "{福岡|ふくおか}", "ふくおか", "Fukuoka (ville)", "Fukuoka (city)"],
   ["影", 15, "N1", ["エイ"], ["かげ"], ["shadow", "silhouette", "phantom"], ["ombre portée", "silhouette", "fantôme"], "{影響|えいきょう}", "えいきょう", "influence", "influence"],
   ["命", 8, "N3", ["メイ", "ミョウ"], ["いのち"], ["fate", "command", "decree", "destiny"], ["destinée", "destin", "ordre", "décret"], "{生命|せいめい}", "せいめい", "vie", "life"],
   ["含", 7, "N2", ["ガン"], ["ふく・む", "ふく・める"], ["contain", "include", "hold in the mouth", "bear in mind"], ["inclure", "retenir", "comprendre", "chérir"], "{含|ふく}む", "ふくむ", "contenir, inclure", "to contain, to include"],
