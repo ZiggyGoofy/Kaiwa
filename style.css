@@ -772,3 +772,11 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   .q-count { color: #fff; text-shadow: 0 2px 0 #0a1433; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; }
   .streak-bonus { font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
 }
+
+/* ============ Choix de l'application (Kaiwa / SpeedHangul) ============ */
+.app-choices { flex-direction: row; }
+.app-btn { flex: 1; flex-direction: column; gap: 2px; padding: 16px 8px; }
+.app-btn .app-logo { font-size: 2.2rem; color: var(--navy); line-height: 1.1; font-family: "Jua", "M PLUS Rounded 1c", "Apple SD Gothic Neo", "Malgun Gothic", "Hiragino Sans", system-ui, sans-serif; }
+.app-btn .app-logo::first-letter { color: var(--accent); }
+.app-btn b { font-size: 1.1rem; }
+.app-btn small { font-size: .8rem; font-weight: 600; color: #4b5563; font-family: system-ui, sans-serif; }

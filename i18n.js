@@ -15,6 +15,8 @@ const fmt = (n) => n.toLocaleString(LOCALE);
 function setLang(lang) {
   try { localStorage.setItem(LANG_KEY, lang); } catch {}
   if (lang !== LANG) location.reload();
+  // même langue que celle du navigateur : pas de rechargement, on enchaîne sur le choix de l'app
+  else if (typeof appChosen === "function" && !appChosen()) showAppChooser();
 }
 
 // Textes fixes de index.html (attributs data-i18n, data-i18n-title, data-i18n-ph)
@@ -22,7 +24,7 @@ const STATIC_EN = {
   tabKana: "Kana", tabPhrases: "Phrases", tabCards: "Cards", tabQuiz: "Quiz",
   theme: "Topic:", newConv: " New", wotd: "Word of the day",
   inputPh: "Write in Japanese (or in English if you're stuck)…",
-  settings: "Settings", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
+  settings: "Settings", appLabel: "App", optKaiwa: "会話 Kaiwa — Japanese", optHangul: "한글 SpeedHangul — Korean", language: "Language", ai: "Artificial intelligence", apiKey: "API key",
   keyLocal: "The key stays on this device only.", model: "Model", otherModel: "Other model (optional)",
   otherModelPh: "exact model ID", autoSpeak: "Read replies aloud automatically (voice mode)",
   autoSend: "Send automatically after dictation", voiceRate: "Voice speed:", close: "Close",

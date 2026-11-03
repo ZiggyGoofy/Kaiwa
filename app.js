@@ -509,6 +509,8 @@ applyVoiceMode();
 document.querySelectorAll(".lang-btn").forEach((b) => (b.onclick = () => { $("langDialog").close(); setLang(b.dataset.lang); }));
 $("langDialog").addEventListener("cancel", (e) => e.preventDefault()); // on doit choisir une langue
 if (!LANG_CHOSEN) $("langDialog").showModal();
+else if (!appChosen()) showAppChooser(); // puis, une seule fois : Kaiwa ou SpeedHangul ?
+initAppSelect();
 // nettoie un éventuel tour inachevé (fermeture pendant une requête)
 if (state.messages.at(-1)?.role === "user") state.messages.pop();
 render();

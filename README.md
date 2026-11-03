@@ -21,6 +21,19 @@ Sur téléphone, l'interface passe en mode « menu de jeu » : barre d'onglets e
 
 Une seule base de code : elle tourne dans le navigateur sur PC et s'installe comme une app sur téléphone (PWA).
 
+## SpeedHangul 한글 — la version coréenne (dossier `hangul/`)
+
+Le même site contient aussi **SpeedHangul**, pour apprendre le coréen, avec toutes les fonctions de Kaiwa sauf le chat avec Sakura :
+- **Aujourd'hui** (onglet du milieu) — mot du jour avec calendrier, série de jours, points, et raccourcis vers les cartes, le jeu de vitesse et le Brute force. Point rouge tant que le mot du jour n'est pas appris
+- **Hangeul** — les 40 lettres (consonnes, doubles, voyelles, voyelles composées), chacune avec une affiche mnémotechnique illustrée et un mot d'exemple ; assembleur de syllabes (ㄱ + ㅏ = 가) et tableau des syllabes
+- **Phrases** — 8 thèmes avec audio
+- **Cartes** — lettres par groupes, 12 paquets de vocabulaire, phrases, mots du jour, et 34 phrases à trous sur les particules coréennes (은/는, 이/가, 을/를, 에/에서…)
+- **Quiz** — lettres ou syllabes en 10/30/60/90 cartes, vocabulaire, bonus de série, Brute force et ⚡ jeu de vitesse
+
+Au premier lancement, l'app demande la langue (une seule fois pour les deux apps), puis **Kaiwa ou SpeedHangul**. On peut changer à tout moment dans ⚙ Réglages → Application. Le site se souvient du choix : https://TON-PSEUDO.github.io/Kaiwa/ ouvre directement la bonne app. Les points et la progression de chaque app sont séparés.
+
+Fichiers de SpeedHangul : `hangul/index.html`, `hangul/style.css`, `hangul/core.js` (réglages, voix coréenne), `hangul/content.js` (tout le contenu coréen, FR et EN dans les mêmes entrées), `hangul/mnemo.js` (dessins), `hangul/learn.js`, `hangul/bruteforce.js`, `hangul/speed.js`. Le choix de l'app est dans `appchoice.js` (à la racine, partagé).
+
 ---
 
 ## 1. Choisir une IA pour Sakura (gratuit possible)
@@ -94,6 +107,8 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - `learn.js` — onglets, mot du jour, kana, cartes, quiz et points
 - `bruteforce.js` — le quiz Brute force des kana
 - `speed.js` — le jeu de vitesse
+- `appchoice.js` — le choix Kaiwa / SpeedHangul
+- `hangul/` — SpeedHangul, la version coréenne
 - `mnemo.js` — les 92 dessins mnémotechniques des kana
 - `manifest.json`, `sw.js`, `icons/` — ce qui rend l'app installable
 
@@ -107,4 +122,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v21` → `kaiwa-v22` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v22` → `kaiwa-v23` dans `sw.js` pour forcer la mise à jour sur le téléphone.
