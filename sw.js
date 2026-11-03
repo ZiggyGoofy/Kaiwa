@@ -1,9 +1,9 @@
 // Service worker : met l'app (Kaiwa + SpeedHangul) en cache pour qu'elle s'ouvre vite et soit installable.
 // Les appels à l'API Claude ne sont jamais mis en cache.
-const CACHE = "kaiwa-v24";
+const CACHE = "kaiwa-v25";
 const FILES = ["./", "index.html", "style.css", "i18n.js", "app.js", "content.js", "content-en.js", "kanji.js", "mnemo.js", "learn.js", "bruteforce.js", "speed.js", "appchoice.js", "manifest.json", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png", "icons/hangul.svg",
   // SpeedHangul (dossier hangul/)
-  "hangul/", "hangul/index.html", "hangul/style.css", "hangul/i18n.js", "hangul/core.js", "hangul/content.js", "hangul/mnemo.js",
+  "hangul/", "hangul/index.html", "hangul/style.css", "hangul/i18n.js", "hangul/app.js", "hangul/content.js", "hangul/mnemo.js",
   "hangul/learn.js", "hangul/bruteforce.js", "hangul/speed.js"];
 
 self.addEventListener("install", (e) => {

@@ -23,16 +23,16 @@ Une seule base de code : elle tourne dans le navigateur sur PC et s'installe com
 
 ## SpeedHangul 한글 — la version coréenne (dossier `hangul/`)
 
-Le même site contient aussi **SpeedHangul**, pour apprendre le coréen, avec toutes les fonctions de Kaiwa sauf le chat avec Sakura :
-- **Aujourd'hui** (onglet du milieu) — mot du jour avec calendrier, série de jours, points, et raccourcis vers les cartes, le jeu de vitesse et le Brute force. Point rouge tant que le mot du jour n'est pas appris
+Le même site contient aussi **SpeedHangul**, pour apprendre le coréen, avec les mêmes fonctions que Kaiwa :
+- **Jiwoo 지우** (onglet du milieu) — l'équivalent de Sakura : une étudiante de Séoul qui discute en coréen poli simple (해요체), corrige tes phrases, donne la romanisation et la traduction, propose des réponses ; mode écrit ou oral, thèmes, dictée et lecture en coréen. Elle utilise la même clé API que Sakura (reprise automatiquement si elle est déjà enregistrée dans Kaiwa sur le même appareil). Le **mot du jour** (calendrier, série de jours) est sur le bouton doré 말 de sa page
 - **Hangeul** — les 40 lettres (consonnes, doubles, voyelles, voyelles composées), chacune avec une affiche mnémotechnique illustrée et un mot d'exemple ; assembleur de syllabes (ㄱ + ㅏ = 가) et tableau des syllabes
-- **Phrases** — 8 thèmes avec audio
+- **Phrases** — 8 thèmes avec audio, et bouton « Pratiquer avec Jiwoo »
 - **Cartes** — lettres par groupes, 12 paquets de vocabulaire, phrases, mots du jour, et 34 phrases à trous sur les particules coréennes (은/는, 이/가, 을/를, 에/에서…)
 - **Quiz** — lettres ou syllabes en 10/30/60/90 cartes, vocabulaire, bonus de série, Brute force et ⚡ jeu de vitesse
 
 Au premier lancement, l'app demande la langue (une seule fois pour les deux apps), puis **Kaiwa ou SpeedHangul**. On peut changer à tout moment dans ⚙ Réglages → Application. Le site se souvient du choix : https://TON-PSEUDO.github.io/Kaiwa/ ouvre directement la bonne app. Les points et la progression de chaque app sont séparés.
 
-Fichiers de SpeedHangul : `hangul/index.html`, `hangul/style.css`, `hangul/core.js` (réglages, voix coréenne), `hangul/content.js` (tout le contenu coréen, FR et EN dans les mêmes entrées), `hangul/mnemo.js` (dessins), `hangul/learn.js`, `hangul/bruteforce.js`, `hangul/speed.js`. Le choix de l'app est dans `appchoice.js` (à la racine, partagé).
+Fichiers de SpeedHangul : `hangul/index.html`, `hangul/style.css`, `hangul/app.js` (Jiwoo, réglages, voix coréenne ; son comportement : `SYSTEM_PROMPT`), `hangul/content.js` (tout le contenu coréen, FR et EN dans les mêmes entrées), `hangul/mnemo.js` (dessins), `hangul/learn.js`, `hangul/bruteforce.js`, `hangul/speed.js`. Le choix de l'app est dans `appchoice.js` (à la racine, partagé).
 
 ---
 
@@ -123,4 +123,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v24` → `kaiwa-v25` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v25` → `kaiwa-v26` dans `sw.js` pour forcer la mise à jour sur le téléphone.

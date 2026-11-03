@@ -136,18 +136,26 @@ for (const k in PHRASES) DECKS["phr:" + k] = { group: "Phrases", title: PHRASES[
 const knownSet = (deck) => new Set(learn.known[deck] || []);
 
 // ---------- Navigation ----------
-const VIEWS = ["jour", "hangeul", "phrases", "cards", "quiz"];
+const VIEWS = ["chat", "hangeul", "phrases", "cards", "quiz"];
 const renderers = {};
 function showView(name) {
-  if (!VIEWS.includes(name)) name = "jour";
-  if (name === "jour" && document.body.dataset.view !== "jour") { cal.sel = null; cal.month = null; } // revient sur aujourd'hui
+  if (!VIEWS.includes(name)) name = "chat";
   for (const v of VIEWS) $("view-" + v).hidden = v !== name;
   document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.view === name));
   document.body.dataset.view = name;
   learn.lastView = name; saveLearn();
   if (renderers[name]) renderers[name]();
+  if (name === "chat") chat.scrollTop = chat.scrollHeight;
 }
 document.querySelectorAll("#tabs button").forEach((b) => (b.onclick = () => showView(b.dataset.view)));
+
+function practiceWithBot(theme) {
+  const key = theme === "essentiels" ? "libre" : theme;
+  showView("chat");
+  if (!hasKey()) { openSettings(); return; }
+  state.scenario = key; $("scenario").value = key; save();
+  newConversation();
+}
 
 
 // ---------- Mot du jour + calendrier ----------
@@ -203,13 +211,8 @@ renderers.jour = function () {
       </div>
       <div class="cal-grid">${cells}</div>
       <p class="cal-help">${L("Touche un jour passé pour revoir son mot. Les jours ✓ sont ajoutés au paquet « Mes mots du jour » dans Cartes.", "Tap a past day to see its word again. Days marked ✓ are added to the \"My words of the day\" deck in Cards.")}</p>
-    </div>
-    <h3 class="sec">${L("Raccourcis", "Shortcuts")}</h3>
-    <div class="mode-list home-links">
-      <button class="mode" data-go="letters"><span class="deck-icon" lang="ko">ㄱ</span><span><span class="deck-title">${L("Réviser les lettres", "Review the letters")}</span><span class="muted">${L("Cartes, par groupes de lettres", "Cards, by letter groups")}</span></span></button>
-      <button class="mode speed-mode" data-go="speed"><span class="deck-icon">⚡</span><span><span class="deck-title">${L("Jeu de vitesse", "Speed game")}</span><span class="muted">${L("Contre la montre, choisis ta durée", "Against the clock, pick your duration")}</span></span></button>
-      <button class="mode bf-mode" data-go="bf"><span class="deck-icon">⌨️</span><span><span class="deck-title">Brute force</span><span class="muted">${L("Tape la lecture de chaque lettre ou syllabe", "Type the reading of each letter or syllable")}</span></span></button>
     </div>`;
+
   $("wSay").onclick = () => speak(w[0]);
   $("wEx").onclick = (e) => { speak(w[3]); pop(e.currentTarget); };
   $("wLearn") && ($("wLearn").onclick = () => {
@@ -221,19 +224,23 @@ renderers.jour = function () {
   });
   $("calPrev").onclick = () => { cal.month = new Date(m.getFullYear(), m.getMonth() - 1, 1); renderers.jour(); };
   $("calNext").onclick = () => { if (!atCurrentMonth) { cal.month = new Date(m.getFullYear(), m.getMonth() + 1, 1); renderers.jour(); } };
-  v.querySelectorAll(".home-links [data-go]").forEach((b) => (b.onclick = () => {
-    const go = b.dataset.go;
-    if (go === "letters") { showView("cards"); openDeck("jamo"); }
-    if (go === "speed") { showView("quiz"); openSpeed(); }
-    if (go === "bf") { showView("quiz"); openBruteForce(); }
-  }));
   v.querySelectorAll("button.cal-day").forEach((b) => (b.onclick = () => { cal.sel = fromKey(b.dataset.k); renderers.jour(); v.scrollTo({ top: 0, behavior: "smooth" }); }));
 };
+// Fenêtre « Mot du jour », ouverte depuis le bouton doré de la page Jiwoo
+function openWotd() {
+  cal.sel = null; cal.month = null; // revient toujours sur aujourd'hui
+  renderers.jour();
+  $("wotdDialog").showModal();
+  $("view-jour").scrollTop = 0;
+}
+$("btnWotd").onclick = openWotd;
+$("wotdClose").onclick = () => $("wotdDialog").close();
+$("wotdDialog").addEventListener("click", (e) => { if (e.target === $("wotdDialog")) $("wotdDialog").close(); });
 function updateWotdDot() { $("wotdDot").hidden = !!learn.days[dkey(new Date())]; }
 function toast(msg) {
   const t = document.createElement("div");
   t.className = "toast"; t.textContent = msg;
-  document.body.appendChild(t);
+  ($("wotdDialog").open ? $("wotdDialog") : document.body).appendChild(t);
   setTimeout(() => t.remove(), 2600);
 }
 
@@ -364,7 +371,7 @@ let phraseTheme = "essentiels";
 renderers.phrases = function () {
   const v = $("view-phrases"), t = PHRASES[phraseTheme];
   v.innerHTML = `
-    <div class="panel-title"><h2>${L("Phrases utiles", "Useful phrases")}</h2><p>${L("Écoute, répète à voix haute, puis révise-les en cartes.", "Listen, repeat out loud, then review them with cards.")}</p></div>
+    <div class="panel-title"><h2>${L("Phrases utiles", "Useful phrases")}</h2><p>${L("Écoute, répète à voix haute, puis entraîne-toi avec Jiwoo.", "Listen, repeat out loud, then practice with Jiwoo.")}</p></div>
     <div class="chips">${Object.entries(PHRASES).map(([k, p]) => `<button data-k="${k}" class="${k === phraseTheme ? "on" : ""}">${esc(p.title)}</button>`).join("")}</div>
     <div class="phrase-list">${t.items.map(([ko, ro, fr], i) => `
       <div class="phrase">
@@ -372,10 +379,12 @@ renderers.phrases = function () {
         <div><div class="ja" lang="ko">${esc(ko)}</div><div class="romaji">${esc(ro)}</div><div class="fr">${esc(fr)}</div></div>
       </div>`).join("")}</div>
     <div class="cta-row">
-      <button class="btn gold" id="phrCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
+      <button class="btn gold" id="phrBot">🌺 ${L("Pratiquer ce thème avec Jiwoo", "Practice this topic with Jiwoo")}</button>
+      <button class="btn" id="phrCards">🃏 ${L("Réviser en cartes", "Review with cards")}</button>
     </div>`;
   v.querySelectorAll(".chips button").forEach((b) => (b.onclick = () => { phraseTheme = b.dataset.k; renderers.phrases(); }));
   v.querySelectorAll(".say").forEach((b) => (b.onclick = () => { speak(t.items[b.dataset.i][0]); pop(b); }));
+  $("phrBot").onclick = () => practiceWithBot(phraseTheme);
   $("phrCards").onclick = () => { showView("cards"); openDeck("phr:" + phraseTheme); };
 };
 
@@ -811,5 +820,5 @@ function renderQuestion() {
 
 // ---------- Démarrage ----------
 updatePill();
-showView(learn.lastView || "jour");
+showView(learn.lastView || "chat");
 updateWotdDot();
