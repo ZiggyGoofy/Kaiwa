@@ -741,7 +741,7 @@ document.addEventListener("keydown", (e) => {
 // ---------- Quiz ----------
 const QUIZ_LEN = 10;                    // longueur par défaut
 const QUIZ_LENS = [10, 30, 60, 90];     // hiragana / katakana : nombre de cartes au choix
-const isKanaQuiz = (mode) => mode === "hira" || mode === "kata" || mode === "kanji"; // nombre de cartes au choix
+const isKanaQuiz = (mode) => mode === "hira" || mode === "kata" || mode === "mix" || mode === "kanji"; // nombre de cartes au choix
 const quizLen = () => (QUIZ_LENS.includes(learn.quizLen) ? learn.quizLen : 10);
 // clé du record : "hira" pour 10 cartes (compatible avec les anciens records), "hira:30" sinon
 const quizKey = (mode, n) => (isKanaQuiz(mode) && n !== 10 ? `${mode}:${n}` : mode);
@@ -753,6 +753,7 @@ function streakBonus(n) {
 const QUIZ_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la bonne lecture", "Find the right reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la bonne lecture", "Find the right reading") },
+  mix: { title: "Hiragana + Katakana", icon: "あア", desc: L("Les deux mélangés", "Both mixed together") },
   kanji: { title: "Kanji", icon: "漢", desc: L("Trouve le sens du kanji (500 kanji)", "Find the kanji's meaning (500 kanji)") },
 };
 let quiz = null;
@@ -776,7 +777,7 @@ function renderQuizHome() {
       const n = isKanaQuiz(k) ? quizLen() : QUIZ_LEN, key = quizKey(k, n);
       return `
       <button class="mode" data-k="${k}">
-        <span class="deck-icon" lang="ja">${m.icon}</span>
+        <span class="deck-icon ${m.icon.length > 1 ? "two" : ""}" lang="ja">${m.icon}</span>
         <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc} · ${n} ${L("cartes", "cards")}</span></span>
         <span class="best">${learn.best[key] != null ? `${stars(learn.best[key], n)}<br><small>${L("Record :", "Best:")} ${learn.bestPts[key] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
       </button>`;
@@ -803,6 +804,7 @@ function stars(score, total = QUIZ_LEN) {
 }
 
 function quizPool(mode) {
+  if (mode === "mix") return [...quizPool("hira"), ...quizPool("kata")];
   if (mode === "vocab") return Object.values(VOCAB).flatMap((c) => c.items.map(([ja, romaji, fr]) => ({ q: ja, a: fr, say: toPlain(ja), sub: romaji })));
   // kanji → sens ; après la réponse : lectures + mot d'exemple (lu à voix haute)
   if (mode === "kanji") return KANJI.map((k) => ({ q: k[0], a: kjMeaning(k), say: k[8], kj: true,
