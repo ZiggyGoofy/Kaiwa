@@ -948,3 +948,5 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
   html[data-theme="dark"] .anki-counts .c-seen { color: var(--ink); }
   html[data-theme="dark"] :is(.anki-top small, .anki-counts small, .anki-done .muted) { color: var(--muted); }
 }
+.kj-lv-seg { margin-bottom: 8px; }
+.kj-lv-seg button { font-weight: 800; }

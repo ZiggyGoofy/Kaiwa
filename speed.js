@@ -10,7 +10,7 @@ const SPEED_TIMES = [
 ];
 const speedTime = () => (SPEED_TIMES.some((x) => x.t === learn.speedTime) ? learn.speedTime : 60);
 // clé du record : "hira" pour 60 s (compatible avec les anciens records), "hira:30" sinon
-const speedKey = (mode, t) => (t === 60 ? mode : `${mode}:${t}`) + (speedTyped() ? ":t" : "");
+const speedKey = (mode, t) => (t === 60 ? mode : `${mode}:${t}`) + (speedTyped() ? ":t" : "") + kjLvSuffix(mode);
 // façon de répondre : "choice" = cliquer sur une des 4 réponses, "type" = écrire la réponse (record séparé)
 const speedTyped = () => learn.speedInput === "type";
 const SPEED_PENALTY = 3, SPEED_BONUS = 2, SPEED_BONUS_EVERY = 5;
@@ -47,14 +47,16 @@ function renderSpeedSetup() {
     <div class="mode-list">${Object.entries(SPEED_MODES).map(([k, m]) => `
       <button class="mode" data-k="${k}">
         <span class="deck-icon ${m.icon.length > 1 ? "two" : ""}" lang="ja">${m.icon}</span>
-        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}</span></span>
+        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}${k === "kanji" ? ` (${kjLvDesc()})` : ""}</span></span>
         <span class="best">${best[speedKey(k, T)] ? `🏅 ${best[speedKey(k, T)]}<br><small>${L(`record ${T} s`, `best ${T} s`)}</small>` : L("Nouveau", "New")}</span>
       </button>`).join("")}
     </div>
+    <h3 class="sec">漢 ${L("Niveau des kanji", "Kanji level")}</h3>${kjLvSeg()}
     <p class="cal-help">${L(
       `⏱ ${T} s au départ · ❌ une erreur coûte ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} bonnes réponses d'affilée = +${SPEED_BONUS} s. `,
       `⏱ ${T} s to start · ❌ a mistake costs ${SPEED_PENALTY} s · 🔥 ${SPEED_BONUS_EVERY} right answers in a row = +${SPEED_BONUS} s. `)}${speedTyped() ? SPEED_TYPE_HELP : L("Sur PC : touches 1 à 4.", "On PC: keys 1 to 4.")}</p>`;
   $("spBack").onclick = () => renderQuizHome();
+  document.querySelectorAll("#view-quiz .kj-lv-seg button").forEach((b) => (b.onclick = () => { learn.kjLv = b.dataset.lv; saveLearn(); renderSpeedSetup(); }));
   document.querySelectorAll("#view-quiz .sp-tbtn").forEach((b) => (b.onclick = () => { learn.speedTime = +b.dataset.t; saveLearn(); renderSpeedSetup(); }));
   document.querySelectorAll("#view-quiz .sp-input button").forEach((b) => (b.onclick = () => { learn.speedInput = b.dataset.in; saveLearn(); renderSpeedSetup(); }));
   document.querySelectorAll("#view-quiz .mode[data-k]").forEach((b) => (b.onclick = () => startSpeed(b.dataset.k)));
@@ -225,7 +227,7 @@ function renderSpeedEnd() {
   const s = speed, total = s.score + s.wrong, acc = total ? Math.round((s.score / total) * 100) : 0;
   $("view-quiz").innerHTML = `<div class="finish">
     <div class="finish-icon">⚡</div>
-    <p class="muted">${SPEED_MODES[s.mode].title} · ${s.time} s · ${s.typed ? L("⌨️ écrit", "⌨️ typed") : L("🖱️ choix", "🖱️ choice")}</p>
+    <p class="muted">${SPEED_MODES[s.mode].title}${s.mode === "kanji" ? ` ${kjQuizLv() === "all" ? "" : kjQuizLv()}` : ""} · ${s.time} s · ${s.typed ? L("⌨️ écrit", "⌨️ typed") : L("🖱️ choix", "🖱️ choice")}</p>
     <h2>${s.score} ${P(s.score, "bonne réponse", "bonnes réponses", "right answer", "right answers")}</h2>
     <div class="points-won">+${s.pts} ⭐</div>
     <p>${s.record ? (s.prev ? L(`🏅 Nouveau record en ${s.time} s ! (avant : ${s.prev}) +20 ⭐`, `🏅 New ${s.time} s record! (before: ${s.prev}) +20 ⭐`) : L("🏅 Premier record établi !", "🏅 First record set!"))

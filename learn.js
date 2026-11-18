@@ -744,7 +744,14 @@ const QUIZ_LENS = [10, 30, 60, 90];     // hiragana / katakana : nombre de carte
 const isKanaQuiz = (mode) => mode === "hira" || mode === "kata" || mode === "mix" || mode === "kanji"; // nombre de cartes au choix
 const quizLen = () => (QUIZ_LENS.includes(learn.quizLen) ? learn.quizLen : 10);
 // clé du record : "hira" pour 10 cartes (compatible avec les anciens records), "hira:30" sinon
-const quizKey = (mode, n) => (isKanaQuiz(mode) && n !== 10 ? `${mode}:${n}` : mode);
+// niveau des kanji pour le quiz et le jeu de vitesse : "all" ou N5…N1 (un record par niveau)
+const kjQuizLv = () => (KJ_LEVELS.includes(learn.kjLv) ? learn.kjLv : "all");
+const kjLvSuffix = (mode) => (mode === "kanji" && kjQuizLv() !== "all" ? "-" + kjQuizLv() : "");
+const quizKey = (mode, n) => (isKanaQuiz(mode) && n !== 10 ? `${mode}:${n}` : mode) + kjLvSuffix(mode);
+// sélecteur de niveau (aussi utilisé par speed.js)
+const kjLvSeg = () => `<div class="seg small kj-lv-seg">${["all", ...KJ_LEVELS].map((lv) =>
+  `<button data-lv="${lv}" class="${lv === kjQuizLv() ? "on" : ""}">${lv === "all" ? L("Tous", "All") : lv}</button>`).join("")}</div>`;
+const kjLvDesc = () => (kjQuizLv() === "all" ? L(`les ${KANJI.length} kanji`, `all ${KANJI.length} kanji`) : `${KJ_BY_LEVEL[kjQuizLv()].length} kanji ${kjQuizLv()}`);
 // bonus de série : paliers à 5, 10, 15, 20 bonnes réponses d'affilée, puis tous les 10
 function streakBonus(n) {
   if (n % 5) return 0;
@@ -754,7 +761,7 @@ const QUIZ_MODES = {
   hira: { title: "Hiragana", icon: "あ", desc: L("Trouve la bonne lecture", "Find the right reading") },
   kata: { title: "Katakana", icon: "ア", desc: L("Trouve la bonne lecture", "Find the right reading") },
   mix: { title: "Hiragana + Katakana", icon: "あア", desc: L("Les deux mélangés", "Both mixed together") },
-  kanji: { title: "Kanji", icon: "漢", desc: L("Trouve le sens du kanji (500 kanji)", "Find the kanji's meaning (500 kanji)") },
+  kanji: { title: "Kanji", icon: "漢", desc: L("Trouve le sens du kanji", "Find the kanji's meaning") },
 };
 let quiz = null;
 
@@ -775,10 +782,12 @@ function renderQuizHome() {
     <div class="seg q-lens">${QUIZ_LENS.map((n) => `<button data-len="${n}" class="${n === quizLen() ? "on" : ""}">${n}</button>`).join("")}</div>
     <div class="mode-list">${Object.entries(QUIZ_MODES).map(([k, m]) => {
       const n = isKanaQuiz(k) ? quizLen() : QUIZ_LEN, key = quizKey(k, n);
-      return `
+      return (k === "kanji" ? `</div>
+      <h3 class="sec">漢 ${L("Kanji par niveau (N5 = le plus facile)", "Kanji by level (N5 = easiest)")}</h3>${kjLvSeg()}
+      <div class="mode-list">` : "") + `
       <button class="mode" data-k="${k}">
         <span class="deck-icon ${m.icon.length > 1 ? "two" : ""}" lang="ja">${m.icon}</span>
-        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc} · ${n} ${L("cartes", "cards")}</span></span>
+        <span><span class="deck-title">${m.title}</span><span class="muted">${m.desc}${k === "kanji" ? ` (${kjLvDesc()})` : ""} · ${n} ${L("cartes", "cards")}</span></span>
         <span class="best">${learn.best[key] != null ? `${stars(learn.best[key], n)}<br><small>${L("Record :", "Best:")} ${learn.bestPts[key] ?? 0} ⭐</small>` : L("Nouveau", "New")}</span>
       </button>`;
     }).join("")}
@@ -794,6 +803,7 @@ function renderQuizHome() {
       </button></div>`;
   document.querySelectorAll(".mode[data-k]").forEach((b) => (b.onclick = () => startQuiz(b.dataset.k)));
   document.querySelectorAll(".q-lens button").forEach((b) => (b.onclick = () => { learn.quizLen = +b.dataset.len; saveLearn(); renderQuizHome(); }));
+  document.querySelectorAll(".kj-lv-seg button").forEach((b) => (b.onclick = () => { learn.kjLv = b.dataset.lv; saveLearn(); renderQuizHome(); }));
   $("bfOpen").onclick = () => openBruteForce();
   $("speedOpen").onclick = () => openSpeed();
 }
@@ -807,7 +817,7 @@ function quizPool(mode) {
   if (mode === "mix") return [...quizPool("hira"), ...quizPool("kata")];
   if (mode === "vocab") return Object.values(VOCAB).flatMap((c) => c.items.map(([ja, romaji, fr]) => ({ q: ja, a: fr, say: toPlain(ja), sub: romaji })));
   // kanji → sens ; après la réponse : lectures + mot d'exemple (lu à voix haute)
-  if (mode === "kanji") return KANJI.map((k) => ({ q: k[0], a: kjMeaning(k), say: k[8], kj: true,
+  if (mode === "kanji") return (kjQuizLv() === "all" ? KANJI : KJ_BY_LEVEL[kjQuizLv()]).map((k) => ({ q: k[0], a: kjMeaning(k), say: k[8], kj: true,
     sub: `${[...k[3], ...k[4]].slice(0, 3).join("、")} · ${toPlain(k[7])} (${k[8]}) = ${L(k[9], k[10])}` }));
   return [...KANA_ROWS, ...KANA_DAKUTEN].flat().filter(Boolean)
     .filter(([k]) => k !== "ぢ" && k !== "づ") // même lecture que じ / ず
