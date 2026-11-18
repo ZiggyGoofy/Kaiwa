@@ -117,6 +117,7 @@ function nextSpeed() {
   s.q = { ...item, options: shuffle([item.a, ...wrong]) };
   s.lock = false;
   $("spQ").classList.remove("good", "bad");
+  $("spQ").querySelector(".sp-read")?.remove();
   $("spText").innerHTML = toRuby(s.q.q);
   if (s.typed) {
     s.accept = speedAccept(s.q);
@@ -181,12 +182,14 @@ function answerSpeed(i) {
   } else {
     s.wrong++; s.combo = 0;
     s.endAt -= SPEED_PENALTY * 1000;
-    if (s.typed) { $("spInput").classList.add("bad"); $("spFeedback").innerHTML = `<span class="bf-bad">${esc(s.q.q.replace(/\{([^|]+)\|[^}]+\}/g, "$1"))} = <b>${esc(s.q.a)}</b></span>`; }
+    if (s.typed) { $("spInput").classList.add("bad"); $("spFeedback").innerHTML = `<span class="bf-bad">${esc(s.q.q.replace(/\{([^|]+)\|[^}]+\}/g, "$1"))} = <b>${esc(s.q.a)}</b></span>${s.q.kj ? `<small class="kj-sub">${esc(kjReadingLine(KANJI.find((x) => x[0] === s.q.q)))}</small>` : ""}`; }
     else { btns[i].classList.add("wrong"); btns[s.q.options.indexOf(s.q.a)].classList.add("right"); }
     $("spQ").classList.add("bad");
     floatMsg(`-${SPEED_PENALTY} s`, "minus");
+    // kanji raté (mode choix) : lectures + rōmaji sous le kanji, le temps de les lire
+    if (!s.typed && s.q.kj) $("spQ").insertAdjacentHTML("beforeend", `<div class="kj-sub sp-read" lang="ja">${esc(kjReadingLine(KANJI.find((x) => x[0] === s.q.q)))}</div>`);
     updateSpeedStats(); tickSpeed();
-    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, s.typed ? 1100 : 650);
+    setTimeout(() => { if (speed === s && speedScreen === "game") nextSpeed(); }, s.q.kj ? 1800 : s.typed ? 1100 : 650);
   }
 }
 

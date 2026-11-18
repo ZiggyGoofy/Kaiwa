@@ -950,3 +950,4 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 }
 .kj-lv-seg { margin-bottom: 8px; }
 .kj-lv-seg button { font-weight: 800; }
+.bf-feedback .kj-sub, .sp-read { display: block; margin-top: 4px; font-size: .9rem; }

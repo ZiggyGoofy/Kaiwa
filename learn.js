@@ -813,12 +813,15 @@ function stars(score, total = QUIZ_LEN) {
   return "★".repeat(n) + "☆".repeat(3 - n);
 }
 
+// lectures du kanji + mot d'exemple, avec le rōmaji : « ジン (jin)、ひと (hito) · 人 (ひと, hito) = personne »
+const kjRom = (r) => kanaToRomaji(toHiraChar(r.replace(/[・.\-]/g, "")));
+const kjReadingLine = (k) => `${[...k[3], ...k[4]].slice(0, 3).map((r) => `${r} (${kjRom(r)})`).join("、")} · ${toPlain(k[7])} (${k[8]}, ${kjRom(k[8])}) = ${L(k[9], k[10])}`;
 function quizPool(mode) {
   if (mode === "mix") return [...quizPool("hira"), ...quizPool("kata")];
   if (mode === "vocab") return Object.values(VOCAB).flatMap((c) => c.items.map(([ja, romaji, fr]) => ({ q: ja, a: fr, say: toPlain(ja), sub: romaji })));
   // kanji → sens ; après la réponse : lectures + mot d'exemple (lu à voix haute)
   if (mode === "kanji") return (kjQuizLv() === "all" ? KANJI : KJ_BY_LEVEL[kjQuizLv()]).map((k) => ({ q: k[0], a: kjMeaning(k), say: k[8], kj: true,
-    sub: `${[...k[3], ...k[4]].slice(0, 3).join("、")} · ${toPlain(k[7])} (${k[8]}) = ${L(k[9], k[10])}` }));
+    sub: kjReadingLine(k) }));
   return [...KANA_ROWS, ...KANA_DAKUTEN].flat().filter(Boolean)
     .filter(([k]) => k !== "ぢ" && k !== "づ") // même lecture que じ / ず
     .map(([k, r]) => ({ q: kanaOf(k, mode), a: r, say: kanaOf(k, mode) }));
