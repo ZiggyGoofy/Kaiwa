@@ -951,3 +951,44 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .kj-lv-seg { margin-bottom: 8px; }
 .kj-lv-seg button { font-weight: 800; }
 .bf-feedback .kj-sub, .sp-read { display: block; margin-top: 4px; font-size: .9rem; }
+.anki-decks { margin: 10px 0 0; }
+.anki-decks button { font-weight: 800; }
+
+/* ============ Objectif N5 ============ */
+.n5-panel { background: var(--panel); border: 2px solid var(--accent); border-radius: 18px; padding: 14px; margin: 4px 0 14px; }
+.n5-head { display: flex; align-items: center; gap: 12px; }
+.n5-head > div { flex: 1; display: flex; flex-direction: column; }
+.n5-head b { font-size: 1.15rem; } .n5-head small { color: var(--muted); }
+.n5-badge { background: var(--accent); color: #fff; font-weight: 900; border-radius: 12px; padding: 8px 10px; font-size: 1.1rem; }
+.n5-pct { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+.n5-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.n5-row { display: grid; grid-template-columns: 34px 1fr 1fr 14px; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--ink); }
+.n5-ic { font-size: 1.3rem; text-align: center; font-weight: 800; }
+.n5-t { display: flex; flex-direction: column; font-weight: 700; }
+.n5-t small { color: var(--muted); font-weight: 500; font-size: .75rem; }
+.n5-go { color: var(--muted); font-size: 1.3rem; }
+/* fiches de grammaire */
+.gram-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.gram-item { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--ink); }
+.gram-item > span:last-child { display: flex; flex-direction: column; }
+.gram-item small { color: var(--muted); }
+.gram-n { min-width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); font-weight: 800; }
+.gram-item.done .gram-n { background: var(--b-green); color: #fff; }
+.gram-card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+.gram-pat { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+.gram-title { font-size: 1.1rem; font-weight: 800; margin: 4px 0 6px; }
+.gram-expl { line-height: 1.5; }
+.gram-ex .phrase { margin-top: 8px; }
+.gram-nav { margin-top: 6px; }
+@media (max-width: 700px) {
+  .n5-panel { background: linear-gradient(180deg, #fff3f3, #ffd9d9); color: #1d2433; border: 2px solid #0f2a6b; box-shadow: 0 4px 0 #0f2a6b; }
+  .n5-head small, .n5-t small, .n5-go { color: #4b5563; }
+  .n5-row, .gram-item, .gram-card { background: #fff; color: #1d2433; border: 2px solid #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; }
+  .gram-item small { color: #4b5563; }
+  .gram-n { background: #eef1ff; }
+  html[data-theme="dark"] .n5-panel { background: linear-gradient(180deg, #4a2530, #36202a); color: var(--ink); }
+  html[data-theme="dark"] :is(.n5-row, .gram-item, .gram-card) { background: linear-gradient(180deg, #2a3561, #1f2850); color: var(--ink); }
+  html[data-theme="dark"] :is(.n5-head small, .n5-t small, .n5-go, .gram-item small) { color: var(--muted); }
+  html[data-theme="dark"] .gram-n { background: #18213d; }
+}
+@media (max-width: 700px) { .gram-hint { color: #cfd8ff; } }
