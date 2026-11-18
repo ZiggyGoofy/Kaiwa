@@ -917,3 +917,90 @@ dialog::backdrop { background: rgba(0,0,0,.45); }
 .sp-type { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .sp-type .bf-input { width: min(100%, 360px); }
 .sp-input { margin-bottom: 6px; }
+
+/* ============ Anki TOPIK · Objectif TOPIK I (repris de Kaiwa) ============ */
+.anki-banner { background: linear-gradient(135deg, color-mix(in srgb, #7c4dff 14%, var(--panel)), var(--panel)); border: 2px solid #7c4dff; border-radius: 18px; padding: 14px; margin: 4px 0 18px; }
+.anki-top { display: flex; align-items: center; gap: 12px; }
+.anki-top > div { flex: 1; display: flex; flex-direction: column; }
+.anki-top b { font-size: 1.15rem; }
+.anki-top small { color: var(--muted); }
+.anki-gear { font-size: 1.1rem; }
+.anki-counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0 8px; text-align: center; }
+.anki-counts span { display: flex; flex-direction: column; background: var(--bg); border-radius: 12px; padding: 6px 2px; }
+.anki-counts b { font-size: 1.35rem; line-height: 1.1; }
+.anki-counts small { font-size: .72rem; color: var(--muted); }
+.c-due { color: #e5484d; } .c-new { color: #2f7de1; } .c-lrn { color: #e2741b; } .c-mat { color: #2f9e44; }
+.anki-counts .c-seen { color: var(--ink); }
+.anki-done { margin: 10px 0 0; font-weight: 700; }
+.anki-done .muted { display: block; font-weight: 500; }
+.anki-opts { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; flex-direction: column; gap: 10px; }
+.anki-opt-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-weight: 600; }
+.seg.small button { padding: 6px 10px; font-size: .9rem; }
+.anki-mini { display: flex; gap: 8px; font-size: 1.05rem; margin-left: auto; }
+.anki-word { font-size: 3rem; line-height: 1.6; }
+.anki-word rt { font-size: .38em; }
+.anki-read { font-size: 1.2rem; font-weight: 700; }
+.anki-rom { color: var(--muted); font-weight: 500; }
+.anki-rank { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+.anki-answers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: min(100%, 420px); }
+.anki-answers.invisible { visibility: hidden; }
+.anki-btn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; border: none; color: #fff; font-weight: 800; font-size: .9rem; box-shadow: 0 3px 0 rgba(0,0,0,.25); }
+.anki-btn small { font-size: .72rem; font-weight: 600; opacity: .9; }
+.anki-btn.g1 { background: #e5484d; } .anki-btn.g2 { background: #e2741b; } .anki-btn.g3 { background: #2f9e44; } .anki-btn.g4 { background: #2f7de1; }
+.anki-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+@media (max-width: 700px) {
+  .anki-banner { background: linear-gradient(180deg, #efe7ff, #d9ccff); color: #1d2433; border: 2px solid #0f2a6b; box-shadow: 0 4px 0 #0f2a6b; }
+  .anki-top small, .anki-counts small, .anki-done .muted { color: #4b5563; }
+  .anki-counts span { background: #fff; border: 2px solid #0f2a6b; }
+  .anki-counts .c-seen { color: #1d2433; }
+  .anki-btn { border: 2px solid #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; font-family: "Lilita One", system-ui, sans-serif; font-weight: 400; letter-spacing: .3px; }
+  .anki-mini { color: #fff; text-shadow: 0 2px 0 #0a1433; }
+  html[data-theme="dark"] .anki-banner { background: linear-gradient(180deg, #2f2a5a, #231f48); color: var(--ink); }
+  html[data-theme="dark"] .anki-counts span { background: #1d2648; }
+  html[data-theme="dark"] .anki-counts .c-seen { color: var(--ink); }
+  html[data-theme="dark"] :is(.anki-top small, .anki-counts small, .anki-done .muted) { color: var(--muted); }
+}
+.anki-word { font-size: 2.6rem; line-height: 1.4; }
+.n5-panel { background: var(--panel); border: 2px solid var(--accent); border-radius: 18px; padding: 14px; margin: 4px 0 14px; }
+.n5-head { display: flex; align-items: center; gap: 12px; }
+.n5-head > div { flex: 1; display: flex; flex-direction: column; }
+.n5-head b { font-size: 1.15rem; } .n5-head small { color: var(--muted); }
+.n5-badge { background: var(--accent); color: #fff; font-weight: 900; border-radius: 12px; padding: 8px 10px; font-size: 1.1rem; }
+.n5-pct { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+.n5-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.n5-row { display: grid; grid-template-columns: 34px 1fr 1fr 14px; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg); color: var(--ink); }
+.n5-ic { font-size: 1.3rem; text-align: center; font-weight: 800; }
+.n5-t { display: flex; flex-direction: column; font-weight: 700; }
+.n5-t small { color: var(--muted); font-weight: 500; font-size: .75rem; }
+.n5-go { color: var(--muted); font-size: 1.3rem; }
+/* fiches de grammaire */
+.gram-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.gram-item { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); color: var(--ink); }
+.gram-item > span:last-child { display: flex; flex-direction: column; }
+.gram-item small { color: var(--muted); }
+.gram-n { min-width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); font-weight: 800; }
+.gram-item.done .gram-n { background: var(--b-green); color: #fff; }
+.gram-card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 12px; }
+.gram-pat { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+.gram-title { font-size: 1.1rem; font-weight: 800; margin: 4px 0 6px; }
+.gram-expl { line-height: 1.5; }
+.gram-ex .phrase { margin-top: 8px; }
+.gram-nav { margin-top: 6px; }
+@media (max-width: 700px) {
+  .n5-panel { background: linear-gradient(180deg, #fff3f3, #ffd9d9); color: #1d2433; border: 2px solid #0f2a6b; box-shadow: 0 4px 0 #0f2a6b; }
+  .n5-head small, .n5-t small, .n5-go { color: #4b5563; }
+  .n5-row, .gram-item, .gram-card { background: #fff; color: #1d2433; border: 2px solid #0f2a6b; box-shadow: 0 3px 0 #0f2a6b; }
+  .gram-item small { color: #4b5563; }
+  .gram-n { background: #eef1ff; }
+  html[data-theme="dark"] .n5-panel { background: linear-gradient(180deg, #4a2530, #36202a); color: var(--ink); }
+  html[data-theme="dark"] :is(.n5-row, .gram-item, .gram-card) { background: linear-gradient(180deg, #2a3561, #1f2850); color: var(--ink); }
+  html[data-theme="dark"] :is(.n5-head small, .n5-t small, .n5-go, .gram-item small) { color: var(--muted); }
+  html[data-theme="dark"] .gram-n { background: #18213d; }
+}
+@media (max-width: 700px) { .gram-hint { color: #cfd8ff; } }
+.n5-badge { font-size: .95rem; }
+.kd-navrow { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 12px; }
+.kd-nav { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--panel); color: var(--ink); font-size: 1.6rem; line-height: 1; }
+.kd-nav:disabled { opacity: .3; }
+.kd-count { color: var(--muted); font-size: .85rem; }
+@media (max-width: 700px) { .gram-nav .kd-count { color: #cfd8ff; } }

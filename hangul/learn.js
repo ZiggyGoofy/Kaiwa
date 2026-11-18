@@ -402,7 +402,7 @@ function renderDecks() {
       <button data-dir="fr" class="${learn.dir === "fr" ? "on" : ""}">${L("🇫🇷 FR → KO 🇰🇷", "🇬🇧 EN → KO 🇰🇷")}</button>
     </div>` +
     Object.entries(groups).map(([g, decks]) => {
-      decks = decks.filter(([, d]) => d.items().length);
+      decks = decks.filter(([, d]) => !d.hidden && d.items().length);
       if (!decks.length) return "";
       return `<h3 class="sec">${GROUP_NAMES[g] || g}</h3>${g === "Particules" ? PARTICLE_MEMO : ""}<div class="deck-grid">` + decks.map(([id, d]) => {
         const items = d.items(), total = items.length, ks = knownSet(id), known = items.filter((it) => ks.has(it.id)).length, pct = Math.round((known / total) * 100);
@@ -599,11 +599,12 @@ function renderParticle() {
   const pick = s.picked, done = pick != null, ok = pick === it.answer;
   const blank = done ? `<span class="blank filled ${ok ? "good" : "bad"}">${esc(it.answer)}</span>` : `<span class="blank">？</span>`;
   const sentence = esc(it.ko).replace("＿", blank).replace(/B：/, "<br>B：");
-  const romaji = esc(it.romaji).replace("__", done ? `<b>${PARTICLE_ROMAJI[it.answer]}</b>` : "___");
+  const optRom = (o) => PARTICLE_ROMAJI[o] ?? (typeof GRAMMAR_ROM !== "undefined" ? GRAMMAR_ROM[o] : undefined) ?? "";
+  const romaji = esc(it.romaji).replace("__", done ? `<b>${optRom(it.answer)}</b>` : "___");
   v.innerHTML = `
     <div class="deck-head">
       <button class="btn small" id="cardBack">← ${L("Paquets", "Decks")}</button>
-      <div><strong>${L("Particules", "Particles")} · ${esc(d.title)}</strong><div class="muted">${s.review ? L("Révision complète", "Full review") : `${L("Maîtrisées :", "Mastered:")} ${known}/${total}`} · ${s.queue.length} ${P(s.queue.length, "restante", "restantes", "left", "left")}</div></div>
+      <div><strong>${d.label || L("Particules", "Particles")} · ${esc(d.title)}</strong><div class="muted">${s.review ? L("Révision complète", "Full review") : `${L("Maîtrisées :", "Mastered:")} ${known}/${total}`} · ${s.queue.length} ${P(s.queue.length, "restante", "restantes", "left", "left")}</div></div>
       <span class="qpts">⭐ ${s.pts || 0}</span>
     </div>
     <div class="part-card ${done ? (ok ? "good" : "bad") : ""}">
@@ -614,7 +615,7 @@ function renderParticle() {
     </div>
     <div class="options part-opts">${it.options.map((o) => {
       const cls = !done ? "" : o === it.answer ? "right" : o === pick ? "wrong" : "dim";
-      return `<button class="opt ${cls}" ${done ? "disabled" : ""}><span lang="ko">${esc(o)}</span><small>${PARTICLE_ROMAJI[o]}</small></button>`;
+      return `<button class="opt ${cls}" ${done ? "disabled" : ""}><span lang="ko">${esc(o)}</span><small>${optRom(o)}</small></button>`;
     }).join("")}</div>
     ${done ? `
       <div class="why ${ok ? "good" : "bad"}"><b>${ok ? L("✓ Bravo !", "✓ Well done!") : L("✗ Pas tout à fait.", "✗ Not quite.")}</b> ${esc(it.why)}</div>

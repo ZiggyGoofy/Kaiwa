@@ -80,7 +80,7 @@ function n5Stats() {
   const kanjiIds = new Set(KJ_BY_LEVEL.N5.map((k) => k[0]));
   const kanjiKnown = [...knownSet("kanji:N5:0")].filter((x) => kanjiIds.has(x)).length;
   const vocab = ANKI_N5.map((w) => anki.cards[ankiKey(w)]).filter(Boolean);
-  const exTotal = gramItems(GRAMMAR_N5).length, exDone = knownSet("gram:all").size;
+  const exTotal = gramItems(GRAMMAR_N5).length, exDone = new Set([...knownSet("gram:all"), ...GRAMMAR_N5.flatMap((g) => [...knownSet("gram:" + g.id)])]).size;
   const partTotal = DECKS["part:mix"].items().length, partDone = Object.keys(PARTICLES).reduce((n, k) => n + knownSet("part:" + k).size, 0);
   return [
     { k: "vocab", icon: "🗂️", t: L("Vocabulaire", "Vocabulary"), n: vocab.filter((c) => c.ivl >= 7).length, tot: ANKI_N5.length, sub: L(`${vocab.length} vus`, `${vocab.length} seen`) },

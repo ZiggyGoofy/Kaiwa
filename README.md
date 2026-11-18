@@ -33,11 +33,14 @@ Le même site contient aussi **SpeedHangul**, pour apprendre le coréen, avec le
 - **Hangeul** — les 40 lettres (consonnes, doubles, voyelles, voyelles composées), chacune avec une affiche mnémotechnique illustrée et un mot d'exemple ; assembleur de syllabes (ㄱ + ㅏ = 가) et tableau des syllabes
 - **Phrases** — 8 thèmes avec audio, et bouton « Pratiquer avec Jiwoo »
 - **Cartes** — lettres par groupes, 12 paquets de vocabulaire, phrases, mots du jour, et 34 phrases à trous sur les particules coréennes (은/는, 이/가, 을/를, 에/에서…)
+- **Objectif TOPIK I** (en haut de Cartes) — progression vers le TOPIK I : vocabulaire, lettres, grammaire, exercices, particules ; chaque ligne ouvre la partie correspondante
+- **Anki · TOPIK I** — 702 mots du niveau TOPIK I (les plus essentiels d'abord) en répétition espacée, avec romanisation, FR/EN et audio (`hangul/anki-topik.js`, `hangul/anki.js`)
+- **Grammaire TOPIK I** — 45 fiches (이에요, -아요/어요, -고 싶어요, -(으)세요, -아서/어서, -(으)면, -ㅂ니다…) avec exemples audio, et 58 exercices « trouve la bonne forme » (`hangul/grammar-ko.js`, `hangul/topik.js`)
 - **Quiz** — lettres ou syllabes en 10/30/60/90 cartes, vocabulaire, bonus de série, Brute force et ⚡ jeu de vitesse
 
 Au premier lancement, l'app demande la langue (une seule fois pour les deux apps), puis **Kaiwa ou SpeedHangul**. On peut changer à tout moment dans ⚙ Réglages → Application. Le site se souvient du choix : https://TON-PSEUDO.github.io/Kaiwa/ ouvre directement la bonne app. Les points et la progression de chaque app sont séparés.
 
-Fichiers de SpeedHangul : `hangul/index.html`, `hangul/style.css`, `hangul/app.js` (Jiwoo, réglages, voix coréenne ; son comportement : `SYSTEM_PROMPT`), `hangul/content.js` (tout le contenu coréen, FR et EN dans les mêmes entrées), `hangul/mnemo.js` (dessins), `hangul/learn.js`, `hangul/bruteforce.js`, `hangul/speed.js`. Le choix de l'app est dans `appchoice.js` (à la racine, partagé).
+Fichiers de SpeedHangul : `hangul/index.html`, `hangul/style.css`, `hangul/app.js` (Jiwoo, réglages, voix coréenne ; son comportement : `SYSTEM_PROMPT`), `hangul/content.js` (tout le contenu coréen, FR et EN dans les mêmes entrées), `hangul/mnemo.js` (dessins), `hangul/learn.js`, `hangul/bruteforce.js`, `hangul/speed.js`, `hangul/anki-topik.js`, `hangul/anki.js`, `hangul/grammar-ko.js`, `hangul/topik.js`. Le choix de l'app est dans `appchoice.js` (à la racine, partagé).
 
 ---
 
@@ -130,4 +133,4 @@ Sur Windows, si la voix japonaise est absente : Paramètres → Heure et langue 
 - Ajouter des phrases à trous : `PARTICLES` dans `content.js`, format `[phrase avec ＿, bonne particule, "mauvaise|mauvaise|mauvaise", rōmaji avec __, français, explication]`
 - Ajouter des mots ou des phrases : `VOCAB` et `PHRASES` dans `content.js`, au format `["{漢字|かんじ}", "romaji", "français"]`
 - Comportement de Sakura (niveau, style…) : `SYSTEM_PROMPT` dans `app.js`
-- Après une modification publiée, augmente le numéro `kaiwa-v34` → `kaiwa-v35` dans `sw.js` pour forcer la mise à jour sur le téléphone.
+- Après une modification publiée, augmente le numéro `kaiwa-v35` → `kaiwa-v36` dans `sw.js` pour forcer la mise à jour sur le téléphone.
